@@ -1,15 +1,17 @@
-package net.martinprobson.example.server.db.config
+package net.martinprobson.example.common.config
 
-import japgolly.clearconfig.*
-import cats.implicits.*
 import cats.effect.IO
+import cats.implicits.*
+import japgolly.clearconfig.*
 
 final case class Config(
   threads: Int,
   driverClassName: String,
   url: String,
   user: String,
-  password: String
+  password: String,
+  capacity: Int,
+  refillEvery: Long
 )
 
 object Config {
@@ -24,7 +26,9 @@ object Config {
     ConfigDef.need[String]("driverClassName"),
     ConfigDef.need[String]("url"),
     ConfigDef.need[String]("user"),
-    ConfigDef.need[String]("password")
+    ConfigDef.need[String]("password"),
+    ConfigDef.need[Int]("capacity"),
+    ConfigDef.need[Long]("refill_every")
   ).mapN(apply)
 
   val loadConfig: IO[Config] = Config.cfg.run(configSources).flatMap(r => IO(r.getOrDie()))

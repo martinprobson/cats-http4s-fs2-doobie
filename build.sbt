@@ -5,17 +5,21 @@ ThisBuild / organization := "net.martinprobson"
 
 val Http4sVersion = "0.23.16"
 val CirceVersion = "0.14.3"
-val LogbackVersion = "1.4.4"
+val LogbackVersion = "1.2.11"
 val DoobieVersion = "1.0.0-RC1"
 val ScalaTestVersion = "3.2.11"
 
 val commonDependencies = Seq(
   "ch.qos.logback" % "logback-classic" % LogbackVersion,
+  "ch.qos.logback" % "logback-core" % LogbackVersion,
   "org.http4s" %% "http4s-circe" % Http4sVersion,
   "org.http4s" %% "http4s-dsl" % Http4sVersion,
   "io.circe" %% "circe-generic" % CirceVersion,
   "io.circe" %% "circe-literal" % CirceVersion,
-  "com.github.japgolly.clearconfig" %% "core" % "3.0.0"
+  "com.github.japgolly.clearconfig" %% "core" % "3.0.0",
+  "org.typelevel" %% "cats-effect-testing-scalatest" % "1.4.0" % Test,
+  "org.scalatest" %% "scalatest" % ScalaTestVersion % Test,
+  "org.scalatest" %% "scalatest-flatspec" % ScalaTestVersion % Test
 )
 
 lazy val root = project
@@ -78,6 +82,7 @@ lazy val assemblySettings = Seq(
     case PathList("META-INF", xs @ _*) => MergeStrategy.discard
     case "application.conf"            => MergeStrategy.concat
     case "reference.conf"              => MergeStrategy.concat
+    case "module-info.class"           => MergeStrategy.discard
     case x =>
       val oldStrategy = (assembly / assemblyMergeStrategy).value
       oldStrategy(x)

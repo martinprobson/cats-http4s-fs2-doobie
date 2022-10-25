@@ -4,25 +4,16 @@ import cats.effect.{IO, IOApp, Resource}
 import doobie.hikari.HikariTransactor
 import doobie.{ExecutionContexts, Transactor}
 import com.comcast.ip4s.*
-import org.http4s.circe.{jsonEncoder, jsonEncoderOf, jsonOf}
+import org.http4s.circe.jsonEncoder
 import org.http4s.dsl.io.*
-import org.http4s.{
-  EntityDecoder,
-  EntityEncoder,
-  Headers,
-  HttpRoutes,
-  Request,
-  Response,
-  Status
-}
+import org.http4s.{HttpRoutes, Request}
 import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.implicits.*
 import io.circe.generic.auto.*
 import io.circe.syntax.EncoderOps
-import net.martinprobson.example.server.db.repository.{DoobieUserRepository, UserRepository}
+import net.martinprobson.example.common.config.Config
+import net.martinprobson.example.server.db.repository.{DBTransactor, DoobieUserRepository, InMemoryUserRepository, UserRepository}
 import net.martinprobson.example.common.model.User
-import net.martinprobson.example.server.db.config.Config
-import org.http4s.server.middleware.Throttle
 import org.typelevel.log4cats.SelfAwareStructuredLogger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 
@@ -31,12 +22,6 @@ import scala.concurrent.duration.*
 object Server extends IOApp.Simple {
 
   def log: SelfAwareStructuredLogger[IO] = Slf4jLogger.getLogger[IO]
-
-  implicit val userEncoder: EntityEncoder[IO, User] = jsonEncoderOf[IO, User]
-
-  implicit val usersEncoder: EntityEncoder[IO, List[User]] = jsonEncoderOf[IO, List[User]]
-
-  implicit val userDecoder: EntityDecoder[IO, User] = jsonOf[IO, User]
 
   def postUser(request: Request[IO])(userRepository: IO[UserRepository]): IO[User] = for {
     user <- request.as[User]
@@ -77,45 +62,21 @@ object Server extends IOApp.Simple {
     * We provide a transactor which will be used by Doobie to execute the SQL statements. Config is
     * lifted into a Resource so that it can be used to setup the connection pool.
     */
-  override def run: IO[Unit] = transactor.use { xa =>
+  override def run: IO[Unit] = DBTransactor.transactor.use { xa =>
     program(xa).flatMap(_ => log.info("Program exit"))
-  }
-
-  /** Setup a HikariTransactor connection pool.
-    * @return
-    *   A Resource containing a HikariTransactor.
-    */
-  private val transactor: Resource[IO, HikariTransactor[IO]] =
-    (for {
-      _ <- Resource.eval[IO, Unit](log.info("Setting up transactor"))
-      cfg <- Resource.eval[IO, Config](Config.loadConfig)
-      ce <- ExecutionContexts.fixedThreadPool[IO](cfg.threads)
-      xa <- HikariTransactor
-        .newHikariTransactor[IO](cfg.driverClassName, cfg.url, cfg.user, cfg.password, ce)
-    } yield xa).onFinalize(log.info("Finalize of transactor"))
-
-  def throttleResponse[IO[_]](retryAfter: Option[FiniteDuration]): Response[IO] = retryAfter match {
-    case None => Response[IO](Status.TooManyRequests)
-    case Some(duration) =>
-      Response[IO](
-        Status.TooManyRequests,
-        headers = Headers("x-reset" -> duration.toSeconds.toString)
-      )
   }
 
   private def program(xa: Transactor[IO]): IO[Unit] = for {
     _ <- log.info("Program starting ....")
     //userRepository <- InMemoryUserRepository.empty
     userRepository <- DoobieUserRepository(xa)
-    bucket <- Throttle.TokenBucket.local[IO](5, 20.seconds)
-    throttle = Throttle.httpApp[IO](bucket, throttleResponse[IO] _)(
-      userService(IO(userRepository)).orNotFound
-    )
+    rateLimit <- RateLimit.throttle(userService(IO(userRepository)).orNotFound)
     _ <- EmberServerBuilder
       .default[IO]
       .withHost(ipv4"0.0.0.0")
       .withPort(port"8085")
-      .withHttpApp(throttle)
+      //.withHttpApp(userService(IO(userRepository)).orNotFound)
+      .withHttpApp(rateLimit)
       .withShutdownTimeout(10.seconds)
       .withLogger(log)
       .build

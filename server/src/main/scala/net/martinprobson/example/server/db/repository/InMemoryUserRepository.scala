@@ -3,7 +3,6 @@ package net.martinprobson.example.server.db.repository
 import cats.effect.{IO, Ref}
 import cats.implicits.toTraverseOps
 import fs2.Stream
-import net.martinprobson.example.server.db.repository.UserRepository
 import net.martinprobson.example.common.model.User
 import net.martinprobson.example.common.model.User.USER_ID
 import org.typelevel.log4cats.slf4j.Slf4jLogger
