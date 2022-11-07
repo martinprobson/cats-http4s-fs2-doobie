@@ -18,9 +18,11 @@ object RateLimitRetry {
 
   def retry: RetryPolicy[IO] = { (req, result, retries) =>
       val (retry, duration) = isThrottleResponseAndDuration(result)
-      if ((retries <= 10) && retry) {
-        log.warn(s"In retry logic - waiting for $duration - retries = $retries ")
-        duration.some
+      if ((retries <= 100) && retry) {
+        val backoff = duration * retries
+        log.warn(s"In retry logic - waiting for $backoff - retries = $retries ")
+        backoff.some
+        //duration.some
       }
       else {
         None
