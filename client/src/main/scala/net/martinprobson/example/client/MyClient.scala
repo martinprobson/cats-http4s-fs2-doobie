@@ -2,7 +2,7 @@ package net.martinprobson.example.client
 
 import cats.effect.{IO, IOApp}
 import org.http4s.circe.*
-import fs2.{Stream, text}
+import fs2.Stream
 import io.circe.generic.auto.*
 import net.martinprobson.example.common.model.User
 import net.martinprobson.example.files.{GenerateUserFiles, ReadUserFiles}
@@ -22,9 +22,18 @@ object MyClient extends IOApp.Simple {
     * Resource so that it can be used to setup the connection pool.
     */
   override def run: IO[Unit] = {
-    GenerateUserFiles.generateUserFiles(1000,10000) >>
-    postUsers.compile.drain >>
-      StreamingUserClient.stream.compile.drain
+    EmberClientBuilder
+      .default[IO]
+      .withRetryPolicy(RateLimitRetry.retry)
+      .withLogger(log)
+      .build
+      .onFinalize(log.info("Shutdown of EmberClient"))
+      .use ( client => for {
+        _ <- GenerateUserFiles.generateUserFiles(10,100)
+        _ <- postUsers(client).compile.drain
+        _ <- StreamingUserClient.stream(client).compile.drain
+      } yield ()
+      )
   }
 
   def postUser(user: User, client: Client[IO]): IO[User] = {
@@ -34,15 +43,9 @@ object MyClient extends IOApp.Simple {
       client.expect(req(user))(jsonOf[IO, User])
   }
 
-  val postUsers: Stream[IO, Unit] = for {
-    client <- Stream
-      .resource(
-        EmberClientBuilder
-          .default[IO]
-          .withRetryPolicy(RateLimitRetry.retry)
-          .build
-      )
+  def postUsers(client: Client[IO]): Stream[IO, Unit] = for {
+    c <- Stream(client)
     _ <- ReadUserFiles.reader
-      .parEvalMap(10)(user => postUser(user, client).flatMap(u => log.info(s"Got $u")))
+      .parEvalMap(10)(user => postUser(user, c).flatMap(u => log.info(s"Got $u")))
   } yield ()
 }
