@@ -30,7 +30,7 @@ class UserRepositoryTests extends AsyncFunSuite with AsyncIOSpec {
       u <- userRepository.addUser(User("User1"))
       user <- userRepository.getUser(u.id)
     } yield user).asserting {
-      case Some(User(_, "User1")) => assert(true)
+      case Some(User(_, "User1")) => assert(condition = true)
       case _                      => fail("Fail")
     }
   }

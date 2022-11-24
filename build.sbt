@@ -1,7 +1,7 @@
 name := "CATS Effect http4s/fs2 with Doobie example"
 ThisBuild / scalaVersion := "2.13.8"
 //ThisBuild / scalaVersion := "3.2.0"
-ThisBuild / version := "0.0.1-SNAPSHOT"
+ThisBuild / version := "0.0.2-SNAPSHOT"
 ThisBuild / organization := "net.martinprobson"
 
 val Http4sVersion = "0.23.16"
@@ -87,7 +87,10 @@ lazy val server = project
         "io.circe" %% "circe-literal" % CirceVersion)
     )
   .settings(Test / fork := true, run / fork := true)
+  .enablePlugins(DockerPlugin)
+  .enablePlugins(JavaAppPackaging)
   .settings(assemblySettings)
+  .settings(dockerExposedPorts := Seq(8085,8085))
 
 lazy val compilerOptions = Seq(
   "-deprecation",         // Emit warning and location for usages of deprecated APIs.

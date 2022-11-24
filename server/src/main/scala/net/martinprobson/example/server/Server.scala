@@ -65,10 +65,8 @@ object Server extends IOApp.Simple {
         }
       case GET -> Root / "usersstream" =>
         Ok(getUsersStream(userRepository))
-      //TODO Separate into different service
       case GET -> Root / "hello" =>
         log.info("In hello world!") >> Ok("Hello world!")
-      //TODO Separate into different service
       case GET -> Root / "seconds" =>
         log.info("seconds") >> Ok(InfiniteStream.stream)
     }
@@ -82,6 +80,10 @@ object Server extends IOApp.Simple {
     program(xa).flatMap(_ => log.info("Program exit"))
   }
 
+  /**
+  * We provide a transactor which will be used by Doobie to execute the SQL statements. Config is lifted into a
+    * Resource so that it can be used to setup the connection pool.
+    */
   private def program(xa: Transactor[IO]): IO[Unit] = for {
     _ <- log.info("Program starting ....")
     //userRepository <- InMemoryUserRepository.empty
@@ -91,8 +93,8 @@ object Server extends IOApp.Simple {
       .default[IO]
       .withHost(ipv4"0.0.0.0")
       .withPort(port"8085")
-      //.withHttpApp(userService(IO(userRepository)).orNotFound)
-      .withHttpApp(rateLimit)
+      .withHttpApp(userService(IO(userRepository)).orNotFound)
+      //.withHttpApp(rateLimit)
       .withShutdownTimeout(10.seconds)
       .withLogger(log)
       .build

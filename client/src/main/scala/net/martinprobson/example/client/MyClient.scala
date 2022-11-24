@@ -18,8 +18,11 @@ object MyClient extends IOApp.Simple {
 
   /** This is our main entry point where the code will actually get executed.
     *
-    * We provide a transactor which will be used by Doobie to execute the SQL statements. Config is lifted into a
-    * Resource so that it can be used to setup the connection pool.
+    * <p>Within the context of an EmberClient, generate some user files, call the postUsers method
+    * to read the files back into a fs2 Stream and post them to an http endpoint and then stream them
+    * back out again from the server.</p>
+    * <p>We provide a transactor which will be used by Doobie to execute the SQL statements. Config is lifted into a
+    * Resource so that it can be used to setup the connection pool.</p>
     */
   override def run: IO[Unit] = {
     EmberClientBuilder
@@ -29,7 +32,7 @@ object MyClient extends IOApp.Simple {
       .build
       .onFinalize(log.info("Shutdown of EmberClient"))
       .use ( client => for {
-        _ <- GenerateUserFiles.generateUserFiles(10,100)
+        _ <- GenerateUserFiles.generateUserFiles(10,1000)
         _ <- postUsers(client).compile.drain
         _ <- StreamingUserClient.stream(client).compile.drain
       } yield ()
@@ -46,6 +49,6 @@ object MyClient extends IOApp.Simple {
   def postUsers(client: Client[IO]): Stream[IO, Unit] = for {
     c <- Stream(client)
     _ <- ReadUserFiles.reader
-      .parEvalMap(10)(user => postUser(user, c).flatMap(u => log.info(s"Got $u")))
+      .parEvalMap(1000)(user => postUser(user, c).flatMap(u => log.info(s"Got $u")))
   } yield ()
 }
