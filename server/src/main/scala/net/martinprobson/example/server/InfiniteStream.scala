@@ -13,7 +13,7 @@ object InfiniteStream extends IOApp.Simple {
   def log: SelfAwareStructuredLogger[IO] = Slf4jLogger.getLogger[IO]
 
   /**
-    * Generates an infinite stream
+    * Generates an infinite stream that emits the String "Hello" and a timestamp every second.
     */
   val stream: Stream[IO, String] =
     Stream
@@ -31,8 +31,9 @@ object InfiniteStream extends IOApp.Simple {
       .evalTap(s => log.info(s))                    // log each entry.
 
   /**
-    * Run the stream (we drain the result as we are logging the output via evalTap.
+    * Test our infinite stream by taking 10 entries (we drain the result as we are logging the output via evalTap).
     * @return Unit
     */
+
   override def run: IO[Unit] = stream.take(10).compile.drain
 }

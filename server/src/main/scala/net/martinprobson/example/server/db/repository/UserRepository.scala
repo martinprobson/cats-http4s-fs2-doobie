@@ -5,6 +5,7 @@ import fs2.Stream
 import net.martinprobson.example.common.model.User
 import net.martinprobson.example.common.model.User.USER_ID
 
+//noinspection ScalaUnusedSymbol
 trait UserRepository {
 
   def addUser(user: User): IO[User]

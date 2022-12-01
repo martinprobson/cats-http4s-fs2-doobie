@@ -16,7 +16,7 @@ object RateLimitRetry {
 
   val log: Logger = LoggerFactory.getLogger(getClass.getName.stripSuffix("$"))
 
-  def retry: RetryPolicy[IO] = { (req, result, retries) =>
+  def retry: RetryPolicy[IO] = { (_, result, retries) =>
       val (retry, duration) = isThrottleResponseAndDuration(result)
       if ((retries <= 100) && retry) {
         val backoff = duration * retries
