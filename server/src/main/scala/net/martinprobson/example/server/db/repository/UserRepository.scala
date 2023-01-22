@@ -14,6 +14,8 @@ trait UserRepository {
   def getUserByName(name: String): IO[List[User]]
   def getUsers: IO[List[User]]
   def getUsersStream: Stream[IO, User]
+
+  def getUserPaged(pageNo: Int, pageSize: Int): IO[List[User]]
   def countUsers: IO[Long]
   def getOrAdd(user: User): IO[User] = for {
     userList <- getUserByName(user.name)

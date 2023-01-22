@@ -21,8 +21,10 @@ class ServerTests extends AsyncFunSuite with AsyncIOSpec {
   def log: SelfAwareStructuredLogger[IO] = Slf4jLogger.getLogger[IO]
 
   def getResponse(request: Request[IO]): IO[Response[IO]] = {
-    val service: HttpRoutes[IO] = userService(InMemoryUserRepository.empty)
-    service.orNotFound.run(request)
+    InMemoryUserRepository.empty.flatMap { ur =>
+      val service: HttpRoutes[IO] = userService(ur)
+      service.orNotFound.run(request)
+    }
   }
 
   test("Invalid URL") {
@@ -34,7 +36,6 @@ class ServerTests extends AsyncFunSuite with AsyncIOSpec {
     val request: Request[IO] = Request[IO](Method.GET, uri"/hello")
     val response = getResponse(request)
     response.asserting(resp => resp.status shouldBe Status.Ok)
-    //FIXME There must be a better way of doing this!!!
     response.flatMap(resp => resp.bodyText.compile.toList.asserting(_.shouldBe(List("Hello world!"))))
   }
 
@@ -43,6 +44,6 @@ class ServerTests extends AsyncFunSuite with AsyncIOSpec {
       .withEntity(User(User.UNASSIGNED_USER_ID,"Test"))
     val response = getResponse(request)
     response.asserting(resp => resp.status shouldBe Status.Ok)
-    response.flatMap(resp => resp.bodyText.compile.toList.asserting(l => l.head.shouldBe(User(1,"Test").asJson)))
+    response.flatMap(resp => resp.bodyText.compile.toList.asserting(l => l.head.shouldBe(User(1,"Test").asJson.noSpaces)))
   }
 }

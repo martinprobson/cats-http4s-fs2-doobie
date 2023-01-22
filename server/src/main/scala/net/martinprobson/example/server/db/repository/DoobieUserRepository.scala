@@ -38,6 +38,15 @@ class DoobieUserRepository(xa: Transactor[IO]) extends UserRepository {
       .compile
       .toList
 
+  private def selectPaged(pageNo: Int, pageSize: Int): ConnectionIO[List[User]] = {
+    val offset = pageNo * pageSize
+    sql"SELECT id, name FROM user ORDER BY id LIMIT $pageSize OFFSET $offset"
+      .query[User]
+      .stream
+      .compile
+      .toList
+  }
+
   override def addUser(user: User): IO[User] = for {
     _ <- log.info(s"About to create : $user")
     user <- insert(user)
@@ -47,6 +56,8 @@ class DoobieUserRepository(xa: Transactor[IO]) extends UserRepository {
   override def addUsers(users: List[User]): IO[List[User]] = users.traverse(addUser)
 
   override def getUser(id: USER_ID): IO[Option[User]] = select(id).transact(xa)
+
+  override def getUserPaged(pageNo: Int, pageSize: Int): IO[List[User]] = selectPaged(pageNo, pageSize).transact(xa)
 
   override def getUserByName(name: String): IO[List[User]] = selectByName(name).transact(xa)
 

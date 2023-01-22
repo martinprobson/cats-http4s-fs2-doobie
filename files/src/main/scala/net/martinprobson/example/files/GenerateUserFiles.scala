@@ -51,5 +51,5 @@ object GenerateUserFiles extends IOApp.Simple {
   /**
     * Main entry point. Generate <code>numFiles</code> each with <code>numOfLines</code> Users.
     */
-    override def run: IO[Unit] = generateUserFiles(10,10)
+    override def run: IO[Unit] = generateUserFiles(10,1000)
 }

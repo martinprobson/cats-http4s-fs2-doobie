@@ -32,7 +32,7 @@ object MyClient extends IOApp.Simple {
       .build
       .onFinalize(log.info("Shutdown of EmberClient"))
       .use ( client => for {
-        _ <- GenerateUserFiles.generateUserFiles(10,1000)
+        _ <- GenerateUserFiles.generateUserFiles(100,1000)
         _ <- postUsers(client).compile.drain
         _ <- StreamingUserClient.stream(client).compile.drain
       } yield ()
@@ -49,6 +49,6 @@ object MyClient extends IOApp.Simple {
   def postUsers(client: Client[IO]): Stream[IO, Unit] = for {
     c <- Stream(client)
     _ <- ReadUserFiles.reader
-      .parEvalMap(1000)(user => postUser(user, c).flatMap(u => log.info(s"Got $u")))
+      .parEvalMap(100)(user => postUser(user, c).flatMap(u => log.info(s"Got $u")))
   } yield ()
 }
