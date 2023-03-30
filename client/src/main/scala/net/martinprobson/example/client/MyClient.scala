@@ -32,23 +32,34 @@ object MyClient extends IOApp.Simple {
       .build
       .onFinalize(log.info("Shutdown of EmberClient"))
       .use ( client => for {
-        _ <- GenerateUserFiles.generateUserFiles(100,1000)
-        _ <- postUsers(client).compile.drain
-        _ <- StreamingUserClient.stream(client).compile.drain
+        _ <- GenerateUserFiles.generateUserFiles(1,3)
+        _ <- postUsers(client)
+          //TODO Look into setting up a flaky server to unit test this
+          //TODO Use broadcastThrough to write two failure files, 1 = users 2 = error msg and user
+          //TODO See https://stackoverflow.com/a/71603380
+          .filter(_.isLeft)
+          .evalTap( e => log.error(e.toString))
+          .map {
+            case Left((_, u)) => u
+            case Right(u) => u
+          }
+          .compile
+          .drain
+ //       _ <- StreamingUserClient.stream(client).compile.drain
       } yield ()
       )
   }
 
-  def postUser(user: User, client: Client[IO]): IO[User] = {
+  private def postUser(user: User, client: Client[IO]): IO[Either[(String,User),User]] = {
     def req(user: User): Request[IO] = Request[IO](method = Method.POST, uri"http://localhost:8085/user")
       .withEntity(user)
     log.info(s"call $user") >>
-      client.expect(req(user))(jsonOf[IO, User])
+        client.expect(req(user))(jsonOf[IO, User]).map(u => Right(u)).handleError(e => Left((e.toString,user)))
   }
 
-  def postUsers(client: Client[IO]): Stream[IO, Unit] = for {
+  private def postUsers(client: Client[IO]): Stream[IO, Either[(String,User),User]] = for {
     c <- Stream(client)
-    _ <- ReadUserFiles.reader
-      .parEvalMap(100)(user => postUser(user, c).flatMap(u => log.info(s"Got $u")))
-  } yield ()
+    s <- ReadUserFiles.reader
+      .parEvalMap(1000)(user => postUser(user, c))
+  } yield s
 }

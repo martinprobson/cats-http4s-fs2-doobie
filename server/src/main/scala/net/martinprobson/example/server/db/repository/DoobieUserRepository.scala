@@ -17,22 +17,22 @@ class DoobieUserRepository(xa: Transactor[IO]) extends UserRepository {
   def log: SelfAwareStructuredLogger[IO] = Slf4jLogger.getLogger[IO]
 
   private def insert(user: User): IO[User] = (for {
-    _ <- sql"INSERT INTO user (name) VALUES (${user.name})".update.run
+    _ <- sql"INSERT INTO user (name, email) VALUES (${user.name},${user.email})".update.run
     id <- sql"SELECT last_insert_id()".query[Long].unique
-    user <- Free.pure[ConnectionOp, User](User(id, user.name))
+    user <- Free.pure[ConnectionOp, User](User(id, user.name, user.email))
   } yield user).transact(xa)
 
   private def select(id: USER_ID): ConnectionIO[Option[User]] =
-    sql"SELECT id, name FROM user WHERE id = $id".query[User].option
+    sql"SELECT id, name, email FROM user WHERE id = $id".query[User].option
 
   private def selectCount: ConnectionIO[Long] =
     sql"SELECT COUNT(*) FROM user".query[Long].unique
 
   private def selectAll: Stream[IO, User] =
-    sql"SELECT id, name FROM user".query[User].stream.transact(xa)
+    sql"SELECT id, name, email FROM user".query[User].stream.transact(xa)
 
   private def selectByName(name: String): ConnectionIO[List[User]] =
-    sql"SELECT id, name FROM user WHERE name = $name"
+    sql"SELECT id, name, email FROM user WHERE name = $name"
       .query[User]
       .stream
       .compile
@@ -40,7 +40,7 @@ class DoobieUserRepository(xa: Transactor[IO]) extends UserRepository {
 
   private def selectPaged(pageNo: Int, pageSize: Int): ConnectionIO[List[User]] = {
     val offset = pageNo * pageSize
-    sql"SELECT id, name FROM user ORDER BY id LIMIT $pageSize OFFSET $offset"
+    sql"SELECT id, name, email FROM user ORDER BY id LIMIT $pageSize OFFSET $offset"
       .query[User]
       .stream
       .compile
@@ -73,8 +73,9 @@ class DoobieUserRepository(xa: Transactor[IO]) extends UserRepository {
          |(
          |    id   int auto_increment
          |        primary key,
-         |    name varchar(100) null
-         |);
+         |    name  varchar(100) null,
+         |    email varchar(100) null
+         |         );
          |""".stripMargin.update.run.transact(xa)
 }
 

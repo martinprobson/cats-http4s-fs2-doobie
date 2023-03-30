@@ -41,9 +41,9 @@ class ServerTests extends AsyncFunSuite with AsyncIOSpec {
 
   test("PostUser") {
     val request: Request[IO] = Request[IO](method = Method.POST, uri"http://localhost:8085/user")
-      .withEntity(User(User.UNASSIGNED_USER_ID,"Test"))
+      .withEntity(User(User.UNASSIGNED_USER_ID,"TestName","TestEmail"))
     val response = getResponse(request)
     response.asserting(resp => resp.status shouldBe Status.Ok)
-    response.flatMap(resp => resp.bodyText.compile.toList.asserting(l => l.head.shouldBe(User(1,"Test").asJson.noSpaces)))
+    response.flatMap(resp => resp.bodyText.compile.toList.asserting(l => l.head.shouldBe(User(1,"TestName","TestEmail").asJson.noSpaces)))
   }
 }

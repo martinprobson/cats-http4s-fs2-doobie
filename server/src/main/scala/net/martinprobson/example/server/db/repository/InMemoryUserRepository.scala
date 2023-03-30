@@ -17,24 +17,24 @@ class InMemoryUserRepository(db: Ref[IO, SortedMap[USER_ID, User]], counter: Ref
     _ <- logger.info(s"About to create : $user")
     id <- counter.modify(x => (x + 1, x + 1))
     _ <- db.update(users => users.updated(key = id, value = user))
-    user <- IO(User(id, user.name))
+    user <- IO(User(id, user.name, user.email))
     _ <- logger.info(s"Created user: $user")
   } yield user
 
   override def addUsers(users: List[User]): IO[List[User]] = users.traverse(addUser)
 
   override def getUser(id: USER_ID): IO[Option[User]] =
-    db.get.map { users => users.get(key = id).map { user => User(id, user.name) } }
+    db.get.map { users => users.get(key = id).map { user => User(id, user.name, user.email) } }
 
   override def getUserByName(name: String): IO[List[User]] = db.get.map { users =>
     users
       .filter { case (_, user) => user.name == name }
-      .map { case (id, user) => User(id, user.name) }
+      .map { case (id, user) => User(id, user.name, user.email) }
       .toList
   }
 
   override def getUsers: IO[List[User]] = db.get.map { users =>
-    users.map { case (id, user) => User(id, user.name) }.toList
+    users.map { case (id, user) => User(id, user.name, user.email) }.toList
   }
 
   override def getUsersStream: fs2.Stream[IO, User] = Stream.evalSeq(getUsers)

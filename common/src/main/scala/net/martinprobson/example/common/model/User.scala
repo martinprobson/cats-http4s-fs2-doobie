@@ -6,7 +6,7 @@ import io.circe.generic.auto.*
 import org.http4s.{EntityDecoder, EntityEncoder}
 import org.http4s.circe.{jsonEncoderOf, jsonOf}
 
-case class User(id: USER_ID, name: String)
+case class User(id: USER_ID, name: String, email: String)
 
 object User {
 
@@ -16,8 +16,8 @@ object User {
 
   implicit val userDecoder: EntityDecoder[IO, User] = jsonOf[IO, User]
 
-  def apply(id: USER_ID, name: String): User = new User(id, name)
-  def apply(name: String): User = new User(UNASSIGNED_USER_ID, name)
+  def apply(id: USER_ID, name: String, email: String): User = new User(id, name, email)
+  def apply(name: String, email: String): User = new User(UNASSIGNED_USER_ID, name, email)
 
   type USER_ID = Long
   val UNASSIGNED_USER_ID = 0L
