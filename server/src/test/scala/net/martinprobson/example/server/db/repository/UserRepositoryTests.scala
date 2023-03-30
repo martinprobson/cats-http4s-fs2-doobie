@@ -27,7 +27,7 @@ object UserRepositoryTests extends SimpleIOSuite {
       userRepository <- InMemoryUserRepository.empty
       u <- userRepository.addUser(User("User1","Email1"))
       user <- userRepository.getUser(u.id)
-    } yield expect(user == Some(User(1, "User1","Email1")))
+    } yield expect(user.contains(User(1, "User1", "Email1")))
   }
 
   test("addUsers") {
