@@ -9,7 +9,6 @@ val CirceVersion = "0.14.0"
 val fs2Version = "3.3.0"
 val LogbackVersion = "1.2.11"
 val DoobieVersion = "1.0.0-RC1"
-val ScalaTestVersion = "3.2.11"
 
 val commonDependencies = Seq(
   "ch.qos.logback" % "logback-classic" % LogbackVersion,
@@ -19,9 +18,7 @@ val commonDependencies = Seq(
   "io.circe" %% "circe-generic" % CirceVersion,
   "io.circe" %% "circe-literal" % CirceVersion,
   "com.github.japgolly.clearconfig" %% "core" % "3.0.0",
-  "org.typelevel" %% "cats-effect-testing-scalatest" % "1.4.0" % Test,
-  "org.scalatest" %% "scalatest" % ScalaTestVersion % Test,
-  "org.scalatest" %% "scalatest-flatspec" % ScalaTestVersion % Test
+  "com.disneystreaming" %% "weaver-cats" % "0.8.2" % Test
 )
 
 lazy val root = project
@@ -118,3 +115,5 @@ lazy val assemblySettings = Seq(
       oldStrategy(x)
   }
 )
+
+testFrameworks += new TestFramework("weaver.framework.CatsEffect")
