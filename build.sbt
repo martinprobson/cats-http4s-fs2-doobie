@@ -26,6 +26,7 @@ lazy val root = project
   .aggregate(common, client, server, files)
   .disablePlugins(AssemblyPlugin)
   .settings(Test / fork := true, run / fork := true)
+  .settings(testFrameworks += new TestFramework("weaver.framework.CatsEffect"))
   .settings(commonSettings)
 
 lazy val common = project
@@ -34,6 +35,7 @@ lazy val common = project
   .settings(libraryDependencies ++= commonDependencies)
   .disablePlugins(AssemblyPlugin)
   .settings(Test / fork := true, run / fork := true)
+  .settings(testFrameworks += new TestFramework("weaver.framework.CatsEffect"))
 
 lazy val files = project
         .in(file("files"))
@@ -65,6 +67,7 @@ lazy val client = project
         "io.circe" %% "circe-literal" % CirceVersion)
   )
   .settings(Test / fork := true, run / fork := true)
+  .settings(testFrameworks += new TestFramework("weaver.framework.CatsEffect"))
   .settings(assemblySettings)
 
 lazy val server = project
@@ -84,6 +87,7 @@ lazy val server = project
         "io.circe" %% "circe-literal" % CirceVersion)
     )
   .settings(Test / fork := true, run / fork := true)
+  .settings(testFrameworks += new TestFramework("weaver.framework.CatsEffect"))
   .enablePlugins(DockerPlugin)
   .enablePlugins(JavaAppPackaging)
   .settings(assemblySettings)

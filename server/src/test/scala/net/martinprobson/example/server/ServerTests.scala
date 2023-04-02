@@ -42,12 +42,12 @@ object ServerTests extends SimpleIOSuite {
 
   test("PostUser") {
     val request: Request[IO] = Request[IO](method = Method.POST, uri"http://localhost:8085/user")
-      .withEntity(User(User.UNASSIGNED_USER_ID,"TestName","TestEmail"))
+      .withEntity(User(User.UNASSIGNED_USER_ID, "TestName", "TestEmail"))
     for {
       resp <- getResponse(request)
       _ <- expect(resp.status == Status.Ok).failFast
       body <- resp.bodyText.compile.toList
-      _ <- expect(body.head == User(1,"TestName","TestEmail").asJson.noSpaces).failFast
+      _ <- expect(body.head == User(1, "TestName", "TestEmail").asJson.noSpaces).failFast
     } yield success
   }
 }

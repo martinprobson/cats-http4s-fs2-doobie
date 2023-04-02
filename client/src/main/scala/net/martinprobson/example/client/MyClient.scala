@@ -43,6 +43,7 @@ object MyClient extends IOApp.Simple {
             case Left((_, u)) => u
             case Right(u) => u
           }
+          .broadcastThrough()
           .compile
           .drain
  //       _ <- StreamingUserClient.stream(client).compile.drain
