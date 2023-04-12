@@ -1,12 +1,10 @@
 name := "CATS Effect http4s/fs2 with Doobie example"
 ThisBuild / scalaVersion := "2.13.10"
-// ThisBuild / scalaVersion := "3.2.0"
 ThisBuild / version := "0.0.2-SNAPSHOT"
 ThisBuild / organization := "net.martinprobson"
 
 val Http4sVersion = "0.23.16"
 val CirceVersion = "0.14.0"
-//val fs2Version = "3.3.0"
 val fs2Version = "3.6.1"
 val LogbackVersion = "1.2.11"
 val DoobieVersion = "1.0.0-RC1"
