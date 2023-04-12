@@ -2,6 +2,7 @@ package net.martinprobson.example.server
 
 import cats.effect.IO
 import net.martinprobson.example.common.config.Config
+import net.martinprobson.example.common.config.Config.config
 import org.http4s.{Headers, HttpApp, Response, Status}
 import org.http4s.server.middleware.Throttle
 
@@ -29,7 +30,6 @@ object RateLimit {
     * Define a token bucket for our rate limiter, that refills with a configurable number of tokens every x milliseconds.
     */
   private val tokenBucket: IO[Throttle.TokenBucket[IO]] = for {
-    config <- Config.loadConfig
     bucket <- Throttle.TokenBucket.local[IO](config.capacity,
       FiniteDuration(config.refillEvery,TimeUnit.MILLISECONDS))
   } yield bucket

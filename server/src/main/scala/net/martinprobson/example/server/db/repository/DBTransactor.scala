@@ -4,6 +4,7 @@ import cats.effect.{IO, Resource}
 import doobie.ExecutionContexts
 import doobie.hikari.HikariTransactor
 import net.martinprobson.example.common.config.Config
+import net.martinprobson.example.common.config.Config.config
 import org.typelevel.log4cats.SelfAwareStructuredLogger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 
@@ -16,10 +17,9 @@ object DBTransactor {
   val transactor: Resource[IO, HikariTransactor[IO]] =
     (for {
       _ <- Resource.eval[IO, Unit](log.info("Setting up transactor"))
-      cfg <- Resource.eval[IO, Config](Config.loadConfig)
-      ce <- ExecutionContexts.fixedThreadPool[IO](cfg.threads)
+      ce <- ExecutionContexts.fixedThreadPool[IO](config.threads)
       xa <- HikariTransactor
-        .newHikariTransactor[IO](cfg.driverClassName, cfg.url, cfg.user, cfg.password, ce)
+        .newHikariTransactor[IO](config.driverClassName, config.url, config.user, config.password, ce)
     } yield xa).onFinalize(log.info("Finalize of transactor"))
 
 }

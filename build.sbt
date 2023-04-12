@@ -1,6 +1,6 @@
 name := "CATS Effect http4s/fs2 with Doobie example"
 ThisBuild / scalaVersion := "2.13.10"
-//ThisBuild / scalaVersion := "3.2.0"
+// ThisBuild / scalaVersion := "3.2.0"
 ThisBuild / version := "0.0.2-SNAPSHOT"
 ThisBuild / organization := "net.martinprobson"
 

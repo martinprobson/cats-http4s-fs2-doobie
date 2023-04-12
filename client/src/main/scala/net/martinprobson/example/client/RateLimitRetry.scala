@@ -22,14 +22,13 @@ object RateLimitRetry {
         val backoff = duration * retries
         log.warn(s"In retry logic - waiting for $backoff - retries = $retries ")
         backoff.some
-        //duration.some
       }
       else {
         None
       }
   }
 
-  def isThrottleResponseAndDuration(result: Either[Throwable, Response[IO]]):
+  private def isThrottleResponseAndDuration(result: Either[Throwable, Response[IO]]):
   (Boolean, FiniteDuration) = {
     val defaultDuration: FiniteDuration = FiniteDuration(0,TimeUnit.MILLISECONDS)
     result match {

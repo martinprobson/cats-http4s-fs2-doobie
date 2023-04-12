@@ -60,7 +60,7 @@ object Server extends IOApp.Simple {
     * @return A list of user objects wrapped in an IO.
     */
   def getUsers(userRepository: UserRepository): IO[List[User]] = for {
-    _ <- log.info(s"In getUsers")
+    _ <- log.info("In getUsers")
     users <- userRepository.getUsers
     _ <- log.info(s"Got $users")
   } yield users
@@ -80,6 +80,18 @@ object Server extends IOApp.Simple {
     Stream.eval(log.info("getUsersStream")) >> userRepository.getUsersStream
 
   /**
+    * Count the number of users in the repository
+    *
+    * @param userRepository A user repository object used to store/fetch user objects from a db
+    * @return The total count of users in the repository
+    */
+  def countUsers(userRepository: UserRepository): IO[Long] = for {
+    _ <- log.info("In countUsers")
+    count <- userRepository.countUsers
+    _ <- log.info(s"Got count of $count users")
+  } yield count
+
+  /**
     * Define a user service that reponds to the defined http methods and endpoints.
     * @param userRepository A user repository object used to store/fetch user objects from a db
     * @return An HttpRoute defining our user service.
@@ -92,6 +104,8 @@ object Server extends IOApp.Simple {
         getUsers(userRepository).flatMap(u => Ok(u.asJson))
       case GET -> Root / "users" / "paged" / IntVar(pageNo) / IntVar(pageSize) =>
         getUsersPaged(pageNo, pageSize, userRepository).flatMap(u => Ok(u.asJson))
+      case GET -> Root / "users" / "count" =>
+        countUsers(userRepository).flatMap(c => Ok(c.asJson))
       case GET -> Root / "user" / LongVar(id) =>
         getUser(id)(userRepository).flatMap {
           case Some(user) => Ok(user.asJson)
@@ -129,8 +143,8 @@ object Server extends IOApp.Simple {
       .withHost(ipv4"0.0.0.0")
       .withPort(port"8085")
       // uncomment line below to remove rate limiter.
-      .withHttpApp(userService(userRepository).orNotFound)
-      //.withHttpApp(rateLimit)
+      //.withHttpApp(userService(userRepository).orNotFound)
+      .withHttpApp(rateLimit)
       .withShutdownTimeout(10.seconds)
       .withLogger(log)
       .build
