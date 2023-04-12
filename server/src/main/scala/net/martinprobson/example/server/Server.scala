@@ -135,16 +135,16 @@ object Server extends IOApp.Simple {
     */
   private def program(xa: Transactor[IO]): IO[Unit] = for {
     _ <- log.info("Program starting ....")
-    //userRepository <- InMemoryUserRepository.empty
-    userRepository <- DoobieUserRepository(xa)
+    userRepository <- InMemoryUserRepository.empty
+    //userRepository <- DoobieUserRepository(xa)
     rateLimit <- RateLimit.throttle(userService(userRepository).orNotFound)
     _ <- EmberServerBuilder
       .default[IO]
       .withHost(ipv4"0.0.0.0")
       .withPort(port"8085")
       // uncomment line below to remove rate limiter.
-      //.withHttpApp(userService(userRepository).orNotFound)
-      .withHttpApp(rateLimit)
+      .withHttpApp(userService(userRepository).orNotFound)
+      //.withHttpApp(rateLimit)
       .withShutdownTimeout(10.seconds)
       .withLogger(log)
       .build

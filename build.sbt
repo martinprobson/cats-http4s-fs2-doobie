@@ -6,7 +6,8 @@ ThisBuild / organization := "net.martinprobson"
 
 val Http4sVersion = "0.23.16"
 val CirceVersion = "0.14.0"
-val fs2Version = "3.3.0"
+//val fs2Version = "3.3.0"
+val fs2Version = "3.6.1"
 val LogbackVersion = "1.2.11"
 val DoobieVersion = "1.0.0-RC1"
 
@@ -17,6 +18,7 @@ val commonDependencies = Seq(
   "org.http4s" %% "http4s-dsl" % Http4sVersion,
   "io.circe" %% "circe-generic" % CirceVersion,
   "io.circe" %% "circe-literal" % CirceVersion,
+  "co.fs2" %% "fs2-core" % fs2Version,
   "com.github.japgolly.clearconfig" %% "core" % "3.0.0",
   "com.disneystreaming" %% "weaver-cats" % "0.8.2" % Test
 )

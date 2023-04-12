@@ -64,14 +64,14 @@ object UserClient extends IOApp.Simple {
     *   <li>Call our program with the file source.</li>
     *   </ol>
     */
-  override def run: IO[Unit] =
-    GenerateUserFiles.generateUserFiles(3, 10, config.directory, config.filenamePrefix) >>
-    program(FileSource.stream)
+  //override def run: IO[Unit] =
+  //  GenerateUserFiles.generateUserFiles(3, 10, config.directory, config.filenamePrefix) >>
+  //  program(FileSource.stream)
 
   /**
     * Main entry point for out client program, call our program with an in memory generated stream of Users
     */
-  //override def run: IO[Unit] = program(MemorySource(1).stream)
+  override def run: IO[Unit] = program(MemorySource(1000000).stream)
 
   private def postUser(user: User, client: Client[IO]): IO[Either[(String,User),User]] = {
     def req(user: User): Request[IO] = Request[IO](method = Method.POST, uri"http://localhost:8085/user")
