@@ -4,8 +4,6 @@ import cats.effect.{IO, IOApp}
 import fs2.io.file.{Files, Flags, Path}
 import fs2.{Stream, text}
 import io.circe.fs2.{decoder, stringStreamParser}
-//FIXME
-//import io.circe.generic.decoding.DerivedDecoder.deriveDecoder
 import net.martinprobson.example.common.Source
 import net.martinprobson.example.common.config.Config
 import net.martinprobson.example.common.config.Config.config
