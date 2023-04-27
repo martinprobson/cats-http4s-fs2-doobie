@@ -135,8 +135,8 @@ object Server extends IOApp.Simple {
     */
   private def program(xa: Transactor[IO]): IO[Unit] = for {
     _ <- log.info("Program starting ....")
-    userRepository <- InMemoryUserRepository.empty
-    //userRepository <- DoobieUserRepository(xa)
+    //userRepository <- InMemoryUserRepository.empty
+    userRepository <- DoobieUserRepository(xa)
     rateLimit <- RateLimit.throttle(userService(userRepository).orNotFound)
     _ <- EmberServerBuilder
       .default[IO]

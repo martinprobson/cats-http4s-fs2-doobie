@@ -3,12 +3,10 @@ package net.martinprobson.example.client
 //TODO Get rid of Circe and replace with another (Scala 3 compatible) Json library
 //TODO Translate to scala3
 import cats.effect.{IO, IOApp}
-import org.http4s.circe.*
+import org.http4s.circe.{jsonOf, *}
 import fs2.Stream
 import io.circe.generic.auto.*
 import net.martinprobson.example.common.MemorySource
-import net.martinprobson.example.common.config.Config
-import net.martinprobson.example.common.config.Config.config
 import net.martinprobson.example.common.model.User
 import net.martinprobson.example.files.{ErrorFileWriter, FileSource, GenerateUserFiles}
 import org.http4s.{Method, Request}
@@ -73,7 +71,7 @@ object UserClient extends IOApp.Simple {
     */
   override def run: IO[Unit] = program(MemorySource(1000000).stream)
 
-  private def postUser(user: User, client: Client[IO]): IO[Either[(String,User),User]] = {
+  private def postUser(user: User, client: Client[IO]): IO[Either[(String,User),User]] =  {
     def req(user: User): Request[IO] = Request[IO](method = Method.POST, uri"http://localhost:8085/user")
       .withEntity(user)
     log.info(s"call $user") >>

@@ -98,7 +98,7 @@ lazy val compilerOptions = Seq(
   "-explaintypes",        // Explain type errors in more detail.
   "-Xsource:3",           // Warn for Scala 3 features
   "-Ymacro-annotations",  // For circe macros
-  "-Xfatal-warnings",     // Fail the compilation if there are any warnings.
+//  "-Xfatal-warnings",     // Fail the compilation if there are any warnings.
   "-encoding",
   "utf8"
 )

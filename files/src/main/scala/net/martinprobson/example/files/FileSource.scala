@@ -16,13 +16,12 @@ object FileSource extends IOApp.Simple with Source {
 
   implicit def log: SelfAwareStructuredLogger[IO] = Slf4jLogger.getLogger[IO]
 
-  /**
-    * Read a collection of files containing User Json objects into a Stream of [IO,User], decoding the Json
-    * into User classes on the way through.
-    *
+  /** Read a collection of files containing User Json objects into a Stream of [IO,User], decoding the Json into User
+    * classes on the way through.
     */
   val stream: Stream[IO, User] =
-    Files[IO].walk(Path(config.directory), maxDepth = 1, followLinks = false)
+    Files[IO]
+      .walk(Path(config.directory), maxDepth = 1, followLinks = false)
       .filter(p => p.fileName.toString.startsWith(config.filenamePrefix))
       .map { path =>
         Files[IO]
@@ -35,8 +34,7 @@ object FileSource extends IOApp.Simple with Source {
       .parJoinUnbounded
   //or use parJoin(n) to limit concurrency
 
-  /**
-    * Test - read the files and count the total number of Users.
+  /** Test - read the files and count the total number of Users.
     */
   def run: IO[Unit] = stream.compile.count.flatMap(c => log.info(s"Total count = $c"))
 
