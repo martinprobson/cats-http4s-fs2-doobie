@@ -4,13 +4,16 @@ import cats.effect.{IO, IOApp}
 import fs2.io.file.{Files, Flags, Path}
 import fs2.{Stream, text}
 import io.circe.fs2.{decoder, stringStreamParser}
-import io.circe.generic.decoding.DerivedDecoder.deriveDecoder
+//FIXME
+//import io.circe.generic.decoding.DerivedDecoder.deriveDecoder
 import net.martinprobson.example.common.Source
 import net.martinprobson.example.common.config.Config
 import net.martinprobson.example.common.config.Config.config
 import net.martinprobson.example.common.model.User
 import org.typelevel.log4cats.SelfAwareStructuredLogger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
+import io.circe.generic.auto.*
+import io.circe.syntax.EncoderOps
 
 object FileSource extends IOApp.Simple with Source {
 

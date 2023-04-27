@@ -9,7 +9,7 @@ import org.http4s.server.middleware.Throttle
 import java.util.concurrent.TimeUnit
 import scala.concurrent.duration.*
 
-object RateLimit {
+object RateLimit:
 
   /**
     * Send a throttle response back to the client if we have exceeded or capacity.
@@ -39,9 +39,10 @@ object RateLimit {
     * @param httpApp The http app that we want to rate limit
     * @return The original http app wrapped with out rate limiter
     */
-  def throttle(httpApp: HttpApp[IO]): IO[HttpApp[IO]] = for {
+  def throttle(httpApp: HttpApp[IO]): IO[HttpApp[IO]] = for
     bucket <- tokenBucket
     throttle = Throttle.httpApp[IO](bucket, throttleResponse[IO] _)(httpApp)
-  } yield throttle
+  yield throttle
 
-}
+end RateLimit
+

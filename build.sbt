@@ -1,10 +1,11 @@
 name := "CATS Effect http4s/fs2 with Doobie example"
-ThisBuild / scalaVersion := "2.13.10"
+//ThisBuild / scalaVersion := "2.13.10"
+ThisBuild / scalaVersion := "3.2.2"
 ThisBuild / version := "0.0.2-SNAPSHOT"
 ThisBuild / organization := "net.martinprobson"
 
 val Http4sVersion = "0.23.16"
-val CirceVersion = "0.14.0"
+val CirceVersion = "0.14.5"
 val fs2Version = "3.6.1"
 val LogbackVersion = "1.2.11"
 val DoobieVersion = "1.0.0-RC1"
@@ -48,7 +49,7 @@ lazy val files = project
                     "io.circe" %% "circe-core" % CirceVersion,
                     "io.circe" %% "circe-generic" % CirceVersion,
                     "io.circe" %% "circe-parser" % CirceVersion,
-                    "io.circe" %% "circe-fs2" % CirceVersion,
+                   "io.circe" %% "circe-fs2" % "0.14.1",
                     "io.circe" %% "circe-literal" % CirceVersion)
         )
         .settings(Test / fork := true, run / fork := true)
@@ -96,9 +97,6 @@ lazy val server = project
 lazy val compilerOptions = Seq(
   "-deprecation",         // Emit warning and location for usages of deprecated APIs.
   "-explaintypes",        // Explain type errors in more detail.
-  "-Xsource:3",           // Warn for Scala 3 features
-  "-Ymacro-annotations",  // For circe macros
-//  "-Xfatal-warnings",     // Fail the compilation if there are any warnings.
   "-encoding",
   "utf8"
 )

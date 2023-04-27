@@ -4,7 +4,9 @@ import cats.effect.{IO, IOApp}
 import cats.implicits.*
 import fs2.io.file.{Files, Path}
 import fs2.{Stream, text}
-import io.circe.generic.encoding.DerivedAsObjectEncoder.deriveEncoder
+//FIXME
+//import io.circe.generic.encoding.DerivedAsObjectEncoder.deriveEncoder
+import io.circe.generic.auto.*
 import io.circe.syntax.EncoderOps
 import net.martinprobson.example.common.config.Config
 import net.martinprobson.example.common.config.Config.config

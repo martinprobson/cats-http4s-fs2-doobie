@@ -1,7 +1,6 @@
 package net.martinprobson.example.client
 
 import cats.effect.IO
-import io.circe.generic.encoding.DerivedAsObjectEncoder.deriveEncoder
 import io.circe.syntax.EncoderOps
 import net.martinprobson.example.common.model.User
 import net.martinprobson.example.common.MemorySource

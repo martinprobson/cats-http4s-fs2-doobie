@@ -1,8 +1,6 @@
 package net.martinprobson.example.server
 
 import cats.effect.IO
-import io.circe.generic.encoding.DerivedAsObjectEncoder.deriveEncoder
-import io.circe.syntax.EncoderOps
 import net.martinprobson.example.common.model.User
 import net.martinprobson.example.server.db.repository.InMemoryUserRepository
 import org.http4s.{Method, Request}
@@ -11,7 +9,8 @@ import org.typelevel.log4cats.slf4j.Slf4jLogger
 import net.martinprobson.example.server.Server.userService
 import org.http4s.*
 import org.http4s.implicits.*
-import org.http4s.implicits.http4sLiteralsSyntax
+import io.circe.generic.auto.*
+import io.circe.syntax.EncoderOps
 import weaver.SimpleIOSuite
 
 object ServerTests extends SimpleIOSuite {

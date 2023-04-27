@@ -10,16 +10,16 @@ import org.typelevel.log4cats.slf4j.Slf4jLogger
 import scala.collection.immutable.SortedMap
 
 class InMemoryUserRepository(db: Ref[IO, SortedMap[USER_ID, User]], counter: Ref[IO, Long])
-    extends UserRepository {
+    extends UserRepository:
 
-  override def addUser(user: User): IO[User] = for {
+  override def addUser(user: User): IO[User] = for
     logger <- Slf4jLogger.create[IO]
-    _ <- logger.info(s"About to create : $user")
+    _ <- logger.debug(s"About to create : $user")
     id <- counter.modify(x => (x + 1, x + 1))
     _ <- db.update(users => users.updated(key = id, value = user))
     user <- IO(User(id, user.name, user.email))
-    _ <- logger.info(s"Created user: $user")
-  } yield user
+    _ <- logger.debug(s"Created user: $user")
+  yield user
 
   override def addUsers(users: List[User]): IO[List[User]] = users.traverse(addUser)
 
@@ -44,12 +44,12 @@ class InMemoryUserRepository(db: Ref[IO, SortedMap[USER_ID, User]], counter: Ref
     IO(users.slice(pageNo * pageSize, pageNo * pageSize + pageSize).toList.map { case (_, user) => user})
   }
 
-}
+end InMemoryUserRepository
 
-object InMemoryUserRepository {
+object InMemoryUserRepository:
 
-  def empty: IO[UserRepository] = for {
+  def empty: IO[UserRepository] = for
     db <- Ref[IO].of(SortedMap.empty[USER_ID, User])
     counter <- Ref[IO].of(0L)
-  } yield new InMemoryUserRepository(db, counter)
-}
+  yield new InMemoryUserRepository(db, counter)
+end InMemoryUserRepository

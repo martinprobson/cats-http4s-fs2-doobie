@@ -6,7 +6,7 @@ import net.martinprobson.example.common.model.User
 import net.martinprobson.example.common.model.User.USER_ID
 
 //noinspection ScalaUnusedSymbol
-trait UserRepository {
+trait UserRepository:
 
   def addUser(user: User): IO[User]
   def addUsers(users: List[User]): IO[List[User]]
@@ -17,12 +17,13 @@ trait UserRepository {
 
   def getUserPaged(pageNo: Int, pageSize: Int): IO[List[User]]
   def countUsers: IO[Long]
-  def getOrAdd(user: User): IO[User] = for {
+  def getOrAdd(user: User): IO[User] = for
     userList <- getUserByName(user.name)
     newUser <-
       userList.headOption match {
         case Some(o) => IO(o)
         case None    => addUser(user)
       }
-  } yield newUser
-}
+  yield newUser
+  
+end UserRepository

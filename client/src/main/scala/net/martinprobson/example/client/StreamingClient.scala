@@ -4,7 +4,7 @@ import cats.effect.{IO, IOApp}
 import org.http4s.client.Client
 import org.http4s.client.middleware.{RequestLogger, ResponseLogger}
 import org.http4s.ember.client.*
-import org.http4s.implicits.http4sLiteralsSyntax
+import org.http4s.implicits.*
 import org.http4s.{Method, Request}
 import org.typelevel.log4cats.SelfAwareStructuredLogger
 import org.typelevel.log4cats.slf4j.Slf4jLogger

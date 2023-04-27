@@ -8,7 +8,7 @@ import fs2.Stream
 import scala.concurrent.duration.*
 import java.util.Date
 
-object InfiniteStream extends IOApp.Simple {
+object InfiniteStream extends IOApp.Simple:
 
   def log: SelfAwareStructuredLogger[IO] = Slf4jLogger.getLogger[IO]
 
@@ -36,4 +36,6 @@ object InfiniteStream extends IOApp.Simple {
     */
 
   override def run: IO[Unit] = stream.take(10).compile.drain
-}
+  
+end InfiniteStream
+
