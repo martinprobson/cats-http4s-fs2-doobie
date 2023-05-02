@@ -16,7 +16,7 @@ import org.typelevel.log4cats.slf4j.Slf4jLogger
   * each containing <code>numOfLines</code> of User objects encoded as Json.
   */
 object GenerateUserFiles extends IOApp.Simple {
-  implicit def log: SelfAwareStructuredLogger[IO] = Slf4jLogger.getLogger[IO]
+  def log: SelfAwareStructuredLogger[IO] = Slf4jLogger.getLogger[IO]
 
   /** Generate user files.
     *
@@ -32,7 +32,7 @@ object GenerateUserFiles extends IOApp.Simple {
   private def generateUserFile(fileIndex: Int, numOfLines: Long, directory: String, filenamePrefix: String): IO[Unit] =
     Stream
       .iterate(((fileIndex - 1) * numOfLines) + 1)(_ + 1)
-      .map(n => User(n, s"User-$n",s"Email-$n"))
+      .map(n => User(n, s"User-$n", s"Email-$n"))
       .covary[IO]
       .take(numOfLines)
       .map(u => u.asJson.noSpaces)
@@ -62,5 +62,5 @@ object GenerateUserFiles extends IOApp.Simple {
   /** Main entry point. Generate <code>numFiles</code> each with <code>numOfLines</code> Users in directory
     * <code>config.directory</code> with a file name prefix of <code>config.filenamePrefix</code>.
     */
-  override def run: IO[Unit] = generateUserFiles(200, 100, config.directory, config.filenamePrefix)
+  override def run: IO[Unit] = generateUserFiles(20, 10000, config.directory, config.filenamePrefix)
 }

@@ -15,7 +15,7 @@ import io.circe.syntax.EncoderOps
 
 object FileSource extends IOApp.Simple with Source {
 
-  implicit def log: SelfAwareStructuredLogger[IO] = Slf4jLogger.getLogger[IO]
+  def log: SelfAwareStructuredLogger[IO] = Slf4jLogger.getLogger[IO]
 
   /** Read a collection of files containing User Json objects into a Stream of [IO,User], decoding the Json into User
     * classes on the way through.

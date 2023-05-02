@@ -24,75 +24,82 @@ import org.typelevel.log4cats.SelfAwareStructuredLogger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 import scala.concurrent.duration.*
 
-object Server extends IOApp.Simple:
+object Server extends IOApp.Simple {
 
   def log: SelfAwareStructuredLogger[IO] = Slf4jLogger.getLogger[IO]
 
-  /**
-    * Post the user (defined in the Request) to the user repository
-    * @param request The request containing the user to be posted
-    * @param userRepository The repository holding user objects.
-    * @return The user object that has been posted (wrapped in an IO)
+  /** Post the user (defined in the Request) to the user repository
+    * @param request
+    *   The request containing the user to be posted
+    * @param userRepository
+    *   The repository holding user objects.
+    * @return
+    *   The user object that has been posted (wrapped in an IO)
     */
-  def postUser(request: Request[IO])(userRepository: UserRepository): IO[User] = for
+  def postUser(request: Request[IO])(userRepository: UserRepository): IO[User] = for {
     user <- request.as[User]
     _ <- log.debug(s"Got User: $user")
     dbUser <- userRepository.addUser(user)
     _ <- log.debug(s"Added User: $dbUser to Db")
-  yield dbUser
+  } yield dbUser
 
-  /**
-    * Get an individual users by id or Option.None if the user does not exist
-    * @param userRepository The repository holding user objects.
-    * @return An Option of User wrapped in an IO
+  /** Get an individual users by id or Option.None if the user does not exist
+    * @param userRepository
+    *   The repository holding user objects.
+    * @return
+    *   An Option of User wrapped in an IO
     */
-  def getUser(id: Long)(userRepository: UserRepository): IO[Option[User]] = for
+  def getUser(id: Long)(userRepository: UserRepository): IO[Option[User]] = for {
     _ <- log.info(s"In getUser: $id")
     u <- userRepository.getUser(id)
     _ <- log.info(s"Found: $u")
-  yield u
+  } yield u
 
-  /**
-    * List all users defined in the repository
-    * @param userRepository The repository holding user objects.
-    * @return A list of user objects wrapped in an IO.
+  /** List all users defined in the repository
+    * @param userRepository
+    *   The repository holding user objects.
+    * @return
+    *   A list of user objects wrapped in an IO.
     */
-  def getUsers(userRepository: UserRepository): IO[List[User]] = for
+  def getUsers(userRepository: UserRepository): IO[List[User]] = for {
     _ <- log.info("In getUsers")
     users <- userRepository.getUsers
     _ <- log.info(s"Got $users")
-  yield users
+  } yield users
 
-  def getUsersPaged(pageNo: Int, pageSize: Int, userRepository: UserRepository): IO[List[User]] = for
+  def getUsersPaged(pageNo: Int, pageSize: Int, userRepository: UserRepository): IO[List[User]] = for {
     _ <- log.info(s"In getUsersPaged pageNo = $pageNo, pageSize = $pageSize")
     users <- userRepository.getUserPaged(pageNo, pageSize)
     _ <- log.info(s"Got $users")
-  yield users
+  } yield users
 
-  /**
-    * Stream all users defined in the repository
-    * @param userRepository The repository holding user objects.
-    * @return A stream of user objects wrapped in an IO.
+  /** Stream all users defined in the repository
+    * @param userRepository
+    *   The repository holding user objects.
+    * @return
+    *   A stream of user objects wrapped in an IO.
     */
   def getUsersStream(userRepository: UserRepository): Stream[IO, User] =
     Stream.eval(log.info("getUsersStream")) >> userRepository.getUsersStream
 
-  /**
-    * Count the number of users in the repository
+  /** Count the number of users in the repository
     *
-    * @param userRepository A user repository object used to store/fetch user objects from a db
-    * @return The total count of users in the repository
+    * @param userRepository
+    *   A user repository object used to store/fetch user objects from a db
+    * @return
+    *   The total count of users in the repository
     */
-  def countUsers(userRepository: UserRepository): IO[Long] = for
+  def countUsers(userRepository: UserRepository): IO[Long] = for {
     _ <- log.info("In countUsers")
     count <- userRepository.countUsers
     _ <- log.info(s"Got count of $count users")
-  yield count
+  } yield count
 
-  /**
-    * Define a user service that reponds to the defined http methods and endpoints.
-    * @param userRepository A user repository object used to store/fetch user objects from a db
-    * @return An HttpRoute defining our user service.
+  /** Define a user service that reponds to the defined http methods and endpoints.
+    * @param userRepository
+    *   A user repository object used to store/fetch user objects from a db
+    * @return
+    *   An HttpRoute defining our user service.
     */
   def userService(userRepository: UserRepository): HttpRoutes[IO] = HttpRoutes
     .of[IO] {
@@ -126,17 +133,15 @@ object Server extends IOApp.Simple:
     program(xa).flatMap(_ => log.info("Program exit"))
   }
 
-  /**
-    * Start an Ember server to run our Http App.<p>
-  * We provide a transactor which will be used by Doobie to execute the SQL statements. Config is lifted into a
-    * Resource so that it can be used to setup the connection pool.</p>
+  /** Start an Ember server to run our Http App.<p> We provide a transactor which will be used by Doobie to execute the
+    * SQL statements. Config is lifted into a Resource so that it can be used to setup the connection pool.</p>
     */
-  private def program(xa: Transactor[IO]): IO[Unit] = for
+  private def program(xa: Transactor[IO]): IO[Unit] = for {
     _ <- log.info("Program starting ....")
     //userRepository <- InMemoryUserRepository.empty
     userRepository <- DoobieUserRepository(xa)
     rateLimit <- RateLimit.throttle(userService(userRepository).orNotFound)
-    _ <- EmberServerBuilder
+    server <- EmberServerBuilder
       .default[IO]
       .withHost(ipv4"0.0.0.0")
       .withPort(port"8085")
@@ -148,7 +153,11 @@ object Server extends IOApp.Simple:
       .build
       .onFinalize(log.info("Shutdown of EmberServer"))
       .use(_ => IO.never)
-  yield ()
+      .start
+    _ <- IO.println("Server started on port 8085")
+    _ <- IO.println("Press enter to stop the server...")
+    _ <- IO.consoleForIO.readLine
+    _ <- server.cancel
+  } yield ()
 
-end Server
-
+}

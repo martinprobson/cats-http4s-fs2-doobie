@@ -4,10 +4,17 @@ import cats.effect.IO
 import fs2.Stream
 import net.martinprobson.example.common.model.User
 
+/** A Source capable of generating a Stream of User objects.
+  */
 trait Source {
   def stream: Stream[IO, User]
 }
 
+/** Generate an (in memory) stream of Users with a given size.
+  *
+  * @param size
+  *   The number of user objects to generate.
+  */
 case class MemorySource(private val size: Int) extends Source {
   def stream: Stream[IO, User] =
     Stream

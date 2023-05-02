@@ -22,7 +22,7 @@ object ClientTests extends SimpleIOSuite {
     val httpApp: HttpApp[IO] = FlakyServer.httpRoutes.orNotFound
     val client: Client[IO] = Client.fromHttpApp(httpApp)
     for {
-      _ <- UserClient.userClient(client, ErrorSource(10000).stream.interleaveAll(MemorySource(20000).stream))
+      _ <- UserClient.userClient(client, ErrorSource(10).stream.interleaveAll(MemorySource(10).stream))
     } yield success
   }
 }

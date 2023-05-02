@@ -12,13 +12,15 @@ import io.circe.generic.auto.*
 import io.circe.syntax.EncoderOps
 
 object ErrorFileWriter {
-  implicit def log: SelfAwareStructuredLogger[IO] = Slf4jLogger.getLogger[IO]
-  def write: Pipe[IO, (String,User), Nothing] = {
-    _.map( u => u._2.asJson.noSpaces)
-    .evalTap(u => log.info(s"Sending $u to error file - ${config.userErrorFilename}"))
-    .intersperse("\n")
-    .through(text.utf8.encode)
-    .through(Files[IO].writeAll(Path(s"${config.directory}/${config.userErrorFilename}")))
+
+  def log: SelfAwareStructuredLogger[IO] = Slf4jLogger.getLogger[IO]
+
+  def write: Pipe[IO, (String, User), Nothing] = {
+    _.map(u => u._2.asJson.noSpaces)
+      .evalTap(u => log.info(s"Sending $u to error file - ${config.userErrorFilename}"))
+      .intersperse("\n")
+      .through(text.utf8.encode)
+      .through(Files[IO].writeAll(Path(s"${config.directory}/${config.userErrorFilename}")))
   }
 
   def writeErrorMsg: Pipe[IO, (String, User), Nothing] = {

@@ -1,5 +1,4 @@
 name := "CATS Effect http4s/fs2 with Doobie example"
-//ThisBuild / scalaVersion := "2.13.10"
 ThisBuild / scalaVersion := "3.2.2"
 ThisBuild / version := "0.0.2-SNAPSHOT"
 ThisBuild / organization := "net.martinprobson"
@@ -42,6 +41,7 @@ lazy val files = project
         .in(file("files"))
         .dependsOn(common)
         .settings(commonSettings)
+        .settings(assembly / mainClass := Some("net.martinprobson.example.files.GenerateUserFiles"))
         .settings(libraryDependencies ++=
                 commonDependencies ++
                 Seq("co.fs2" %% "fs2-core" % fs2Version,
@@ -68,6 +68,7 @@ lazy val client = project
         "io.circe" %% "circe-literal" % CirceVersion)
   )
   .settings(Test / fork := true, run / fork := true)
+  .settings(assembly / mainClass := Some("net.martinprobson.example.client.UserClient"))
   .settings(testFrameworks += new TestFramework("weaver.framework.CatsEffect"))
   .settings(assemblySettings)
 
@@ -75,6 +76,7 @@ lazy val server = project
   .in(file("server"))
   .dependsOn(common)
   .settings(commonSettings)
+  .settings(assembly / mainClass := Some("net.martinprobson.example.server.Server"))
   .settings(libraryDependencies ++=
     commonDependencies ++
     Seq("org.http4s" %% "http4s-ember-server" % Http4sVersion,

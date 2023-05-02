@@ -14,7 +14,7 @@ import net.martinprobson.example.server.db.repository
 import org.typelevel.log4cats.SelfAwareStructuredLogger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 
-class DoobieUserRepository(xa: Transactor[IO]) extends UserRepository:
+class DoobieUserRepository(xa: Transactor[IO]) extends UserRepository {
 
   def log: SelfAwareStructuredLogger[IO] = Slf4jLogger.getLogger[IO]
 
@@ -49,11 +49,11 @@ class DoobieUserRepository(xa: Transactor[IO]) extends UserRepository:
       .toList
   }
 
-  override def addUser(user: User): IO[User] = for
+  override def addUser(user: User): IO[User] = for {
     _ <- log.debug(s"About to create : $user")
     user <- insert(user)
     _ <- log.debug(s"Created user: $user")
-  yield user
+  } yield user
 
   override def addUsers(users: List[User]): IO[List[User]] = users.traverse(addUser)
 
@@ -79,12 +79,12 @@ class DoobieUserRepository(xa: Transactor[IO]) extends UserRepository:
          |    email varchar(100) null
          |         );
          |""".stripMargin.update.run.transact(xa)
-end DoobieUserRepository
+}
 
-object DoobieUserRepository:
-  def apply(xa: Transactor[IO]): IO[DoobieUserRepository] = for
+object DoobieUserRepository {
+  def apply(xa: Transactor[IO]): IO[DoobieUserRepository] = for {
     userRepository <- IO(new DoobieUserRepository(xa))
     _ <- userRepository.createTable
-  yield userRepository
+  } yield userRepository
 
-end DoobieUserRepository
+}
