@@ -36,8 +36,8 @@ The structure and main classes of each sub-module are described below.
 
 The number of files and number of user objects to generate per file is controlled by the `numFiles` and `numOfLines` parameters to the main `generateUserFiles` method.
 
-### ReadUserFiles
-[ReadUserFiles](files/src/main/scala/net/martinprobson/example/files/ReadUserFiles.scala)  uses fs2 streaming to read the 
+### FileSource
+[FileSource](files/src/main/scala/net/martinprobson/example/files/FileSource.scala)  uses fs2 streaming to read the 
 generated files into a fs2 stream of `Stream[IO,User]`
 
 The User objects are encoded a Json objects using [Circe](https://circe.github.io/circe/).
