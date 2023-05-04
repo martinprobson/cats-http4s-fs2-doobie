@@ -53,7 +53,7 @@ object GenerateUserFiles extends IOApp.Simple {
     * @param filenamePrefix
     *   The file name prefix for the generated files
     */
-  def generateUserFiles(numFiles: Int, numOfLines: Long, directory: String, filenamePrefix: String): IO[Unit] =
+  private def generateUserFiles(numFiles: Int, numOfLines: Long, directory: String, filenamePrefix: String): IO[Unit] =
     Range
       .inclusive(1, numFiles)
       .toList
