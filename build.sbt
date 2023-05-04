@@ -98,9 +98,7 @@ lazy val server = project
 
 lazy val compilerOptions = Seq(
   "-deprecation",         // Emit warning and location for usages of deprecated APIs.
-  "-explaintypes",        // Explain type errors in more detail.
-  "-encoding",
-  "utf8"
+  "-explaintypes"         // Explain type errors in more detail.
 )
 
 lazy val commonSettings = Seq(
