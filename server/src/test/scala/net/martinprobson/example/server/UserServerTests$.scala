@@ -6,14 +6,14 @@ import net.martinprobson.example.server.db.repository.InMemoryUserRepository
 import org.http4s.{Method, Request}
 import org.typelevel.log4cats.SelfAwareStructuredLogger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
-import net.martinprobson.example.server.Server.userService
+import net.martinprobson.example.server.UserServer.userService
 import org.http4s.*
 import org.http4s.implicits.*
 import io.circe.generic.auto.*
 import io.circe.syntax.EncoderOps
 import weaver.SimpleIOSuite
 
-object ServerTests extends SimpleIOSuite {
+object UserServerTests$ extends SimpleIOSuite {
 
   def log: SelfAwareStructuredLogger[IO] = Slf4jLogger.getLogger[IO]
 

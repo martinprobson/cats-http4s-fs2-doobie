@@ -24,7 +24,7 @@ import org.typelevel.log4cats.SelfAwareStructuredLogger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 import scala.concurrent.duration.*
 
-object Server extends IOApp.Simple {
+object UserServer extends IOApp.Simple {
 
   def log: SelfAwareStructuredLogger[IO] = Slf4jLogger.getLogger[IO]
 
@@ -121,7 +121,7 @@ object Server extends IOApp.Simple {
       case GET -> Root / "hello" =>
         log.info("In hello world!") >> Ok("Hello world!")
       case GET -> Root / "seconds" =>
-        log.info("seconds") >> Ok(InfiniteStream.stream)
+        log.info("seconds") >> Ok(InfiniteStream.stream.take(10))
     }
 
   /** This is our main entry point where the code will actually get executed.
@@ -146,18 +146,18 @@ object Server extends IOApp.Simple {
       .withHost(ipv4"0.0.0.0")
       .withPort(port"8085")
       // uncomment line below to remove rate limiter.
-      .withHttpApp(rateLimit)
-      //.withHttpApp(userService(userRepository).orNotFound)
+      //.withHttpApp(rateLimit)
+      .withHttpApp(userService(userRepository).orNotFound)
       .withShutdownTimeout(10.seconds)
       .withLogger(log)
       .build
       .onFinalize(log.info("Shutdown of EmberServer"))
       .use(_ => IO.never)
-      .start
-    _ <- IO.println("Server started on port 8085")
-    _ <- IO.println("Press enter to stop the server...")
-    _ <- IO.consoleForIO.readLine
-    _ <- server.cancel
+//      .start
+//    _ <- IO.println("Server started on port 8085")
+//    _ <- IO.println("Press enter to stop the server...")
+//    _ <- IO.consoleForIO.readLine
+//    _ <- server.cancel
   } yield ()
 
 }

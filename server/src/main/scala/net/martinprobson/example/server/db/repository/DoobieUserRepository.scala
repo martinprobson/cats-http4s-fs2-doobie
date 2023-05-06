@@ -50,9 +50,9 @@ class DoobieUserRepository(xa: Transactor[IO]) extends UserRepository {
   }
 
   override def addUser(user: User): IO[User] = for {
-    _ <- log.debug(s"About to create : $user")
+    _ <- log.info(s"About to create : $user")
     user <- insert(user)
-    _ <- log.debug(s"Created user: $user")
+    _ <- log.info(s"Created user: $user")
   } yield user
 
   override def addUsers(users: List[User]): IO[List[User]] = users.traverse(addUser)

@@ -43,7 +43,7 @@ generated files into a fs2 stream of `Stream[IO,User]`
 The User objects are encoded a Json objects using [Circe](https://circe.github.io/circe/).
 
 ## Server Project
-[Server](server/src/main/scala/net/martinprobson/example/server/Server.scala) builds a http4s server with a `UserService` that responds to the following endpoints: -
+[UserServer](server/src/main/scala/net/martinprobson/example/server/UserServer.scala) builds a http4s server with a `UserService` that responds to the following endpoints: -
 
 | Http Method | Endpoint                         | Description                                                                        |
 |-------------|----------------------------------|------------------------------------------------------------------------------------|
