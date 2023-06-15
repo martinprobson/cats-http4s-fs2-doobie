@@ -9,7 +9,6 @@ import net.martinprobson.example.common.model.User
 import org.typelevel.log4cats.SelfAwareStructuredLogger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 import io.circe.generic.auto.*
-import io.circe.syntax.EncoderOps
 
 object ErrorFileWriter {
 

@@ -1,5 +1,5 @@
 name := "CATS Effect http4s/fs2 with Doobie example"
-ThisBuild / scalaVersion := "3.2.2"
+ThisBuild / scalaVersion := "3.3.0"
 ThisBuild / version := "0.0.2-SNAPSHOT"
 ThisBuild / organization := "net.martinprobson"
 
@@ -98,6 +98,7 @@ lazy val server = project
 
 lazy val compilerOptions = Seq(
   "-deprecation",         // Emit warning and location for usages of deprecated APIs.
+  "-Wunused:all",
   "-explaintypes"         // Explain type errors in more detail.
 )
 

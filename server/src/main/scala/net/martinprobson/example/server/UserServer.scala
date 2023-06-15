@@ -1,8 +1,7 @@
 package net.martinprobson.example.server
 
-import cats.effect.{IO, IOApp, Resource}
-import doobie.hikari.HikariTransactor
-import doobie.{ExecutionContexts, Transactor}
+import cats.effect.{IO, IOApp}
+import doobie.Transactor
 import com.comcast.ip4s.*
 import org.http4s.circe.jsonEncoder
 import org.http4s.dsl.io.*
@@ -12,11 +11,9 @@ import org.http4s.implicits.*
 import fs2.Stream
 import io.circe.generic.auto.*
 import io.circe.syntax.EncoderOps
-import net.martinprobson.example.common.config.Config
 import net.martinprobson.example.server.db.repository.{
   DBTransactor,
   DoobieUserRepository,
-  InMemoryUserRepository,
   UserRepository
 }
 import net.martinprobson.example.common.model.User
@@ -78,7 +75,7 @@ object UserServer extends IOApp.Simple {
     *   The repository holding user objects.
     * @return
     *   A stream of user objects wrapped in an IO.
-    */
+   */
   def getUsersStream(userRepository: UserRepository): Stream[IO, User] =
     Stream.eval(log.info("getUsersStream")) >> userRepository.getUsersStream
 

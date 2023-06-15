@@ -1,8 +1,6 @@
 package net.martinprobson.example.client
 
 import cats.effect.IO
-import io.circe.syntax.EncoderOps
-import net.martinprobson.example.common.model.User
 import net.martinprobson.example.common.MemorySource
 import org.http4s.implicits.*
 import org.http4s.*

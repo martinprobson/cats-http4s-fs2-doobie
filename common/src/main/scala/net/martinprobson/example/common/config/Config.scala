@@ -1,7 +1,6 @@
 package net.martinprobson.example.common.config
 
 import cats.Id
-import cats.effect.IO
 import cats.implicits.*
 import japgolly.clearconfig.*
 

@@ -2,16 +2,12 @@ package net.martinprobson.example.client
 
 import cats.effect.{IO, IOApp}
 import org.http4s.client.Client
-import org.http4s.client.middleware.{RequestLogger, ResponseLogger}
 import org.http4s.ember.client.*
 import org.http4s.implicits.*
 import org.http4s.{Method, Request}
 import org.typelevel.log4cats.SelfAwareStructuredLogger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 import fs2.{Stream, text}
-import fs2.{Stream, text}
-
-import scala.concurrent.duration.DurationInt
 
 object StreamingClient extends IOApp.Simple {
 
