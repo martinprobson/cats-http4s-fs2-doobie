@@ -11,14 +11,12 @@ import org.http4s.implicits.*
 import fs2.Stream
 import io.circe.generic.auto.*
 import io.circe.syntax.EncoderOps
-import net.martinprobson.example.server.db.repository.{
-  DBTransactor,
-  DoobieUserRepository,
-  UserRepository
-}
+import net.martinprobson.example.server.db.repository.{DBTransactor, DoobieUserRepository, UserRepository}
 import net.martinprobson.example.common.model.User
+import org.http4s.netty.server.NettyServerBuilder
 import org.typelevel.log4cats.SelfAwareStructuredLogger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
+
 import scala.concurrent.duration.*
 
 object UserServer extends IOApp.Simple {
@@ -138,16 +136,15 @@ object UserServer extends IOApp.Simple {
     //userRepository <- InMemoryUserRepository.empty
     userRepository <- DoobieUserRepository(xa)
     rateLimit <- RateLimit.throttle(userService(userRepository).orNotFound)
-    server <- EmberServerBuilder
-      .default[IO]
-      .withHost(ipv4"0.0.0.0")
-      .withPort(port"8085")
+    server <- NettyServerBuilder[IO].bindLocal(9090)
+      //.withHost(ipv4"0.0.0.0")
+      //.withPort(port"8085")
       // uncomment line below to remove rate limiter.
       //.withHttpApp(rateLimit)
       .withHttpApp(userService(userRepository).orNotFound)
-      .withShutdownTimeout(10.seconds)
-      .withLogger(log)
-      .build
+      //.withShutdownTimeout(10.seconds)
+      //.withLogger(log)
+      .resource
       .onFinalize(log.info("Shutdown of EmberServer"))
       .use(_ => IO.never)
 //      .start

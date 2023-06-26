@@ -80,6 +80,7 @@ lazy val server = project
   .settings(libraryDependencies ++=
     commonDependencies ++
     Seq("org.http4s" %% "http4s-ember-server" % Http4sVersion,
+        "org.http4s" %% "http4s-netty-server" % "0.5.7",
         "org.tpolecat" %% "doobie-core" % DoobieVersion,
         "org.tpolecat" %% "doobie-hikari" % DoobieVersion,
         "mysql" % "mysql-connector-java" % "8.0.30",
