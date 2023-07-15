@@ -64,7 +64,7 @@ object UserClient extends IOApp.Simple {
   override def run: IO[Unit] = program(MemorySource(10000).stream)
 
   private def postUser(user: User, client: Client[IO]): IO[Either[(String, User), User]] = {
-    def req(user: User): Request[IO] = Request[IO](method = Method.POST, uri"http://localhost:9090/user")
+    def req(user: User): Request[IO] = Request[IO](method = Method.POST, uri"http://localhost:8085/user")
       .withEntity(user)
     log.info(s"call $user") >>
       client.expect(req(user))(jsonOf[IO, User]).map(u => Right(u)).handleError(e => Left((e.toString, user)))
