@@ -8,6 +8,7 @@ import org.http4s.dsl.io.*
 import org.http4s.{HttpRoutes, Request}
 import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.implicits.*
+import org.http4s.server.middleware.*
 import fs2.Stream
 import io.circe.generic.auto.*
 import io.circe.syntax.EncoderOps
@@ -51,6 +52,17 @@ object UserServer extends IOApp.Simple {
     u <- userRepository.getUser(id)
     _ <- log.info(s"Found: $u")
   } yield u
+
+  /**
+   * Delete a user with the given id.
+   * @param id The user id to delete
+   * @param userRepository The repository holding user objects
+   */
+  def deleteUser(id: Long)(userRepository: UserRepository): IO[Int] = for {
+    _ <- log.info(s"In deleteUser: $id")
+    response <- userRepository.deleteUser(id)
+    _ <- log.info(s"Deleted: $id")
+  } yield response
 
   /** List all users defined in the repository
     * @param userRepository
@@ -113,6 +125,11 @@ object UserServer extends IOApp.Simple {
           case Some(user) => Ok(user.asJson)
           case None       => NotFound()
         }
+      case DELETE -> Root / "user" / LongVar(id) =>
+        deleteUser(id)(userRepository).flatMap {
+          case 0 => NotFound()
+          case _ => Ok()
+        }
       case GET -> Root / "usersstream" =>
         Ok(getUsersStream(userRepository))
       case GET -> Root / "hello" =>
@@ -138,13 +155,15 @@ object UserServer extends IOApp.Simple {
     //userRepository <- InMemoryUserRepository.empty
     userRepository <- DoobieUserRepository(xa)
     rateLimit <- RateLimit.throttle(userService(userRepository).orNotFound)
+    corsServer <- IO(CORS.policy.withAllowOriginAll(userService(userRepository).orNotFound))
     server <- EmberServerBuilder
       .default[IO]
       .withHost(ipv4"0.0.0.0")
       .withPort(port"8085")
       // uncomment line below to remove rate limiter.
       //.withHttpApp(rateLimit)
-      .withHttpApp(userService(userRepository).orNotFound)
+      //.withHttpApp(userService(userRepository).orNotFound)
+      .withHttpApp(corsServer)
       .withShutdownTimeout(10.seconds)
       .withLogger(log)
       .build

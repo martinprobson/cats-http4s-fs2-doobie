@@ -18,6 +18,9 @@ class DoobieUserRepository(xa: Transactor[IO]) extends UserRepository {
 
   def log: SelfAwareStructuredLogger[IO] = Slf4jLogger.getLogger[IO]
 
+  private def delete(id: USER_ID): IO[Int] = 
+    sql"DELETE FROM user WHERE id = $id".update.run.transact(xa) 
+    
   private def insert(user: User): IO[User] = (for
     _ <- sql"INSERT INTO user (name, email) VALUES (${user.name},${user.email})".update.run
     id <- sql"SELECT last_insert_id()".query[Long].unique
@@ -48,6 +51,11 @@ class DoobieUserRepository(xa: Transactor[IO]) extends UserRepository {
       .compile
       .toList
   }
+  
+  override def deleteUser(id: USER_ID): IO[Int] = for {
+    r <- delete(id)
+    _ <- log.info(s"Deleted user with id = $id response = $r")
+  } yield r
 
   override def addUser(user: User): IO[User] = for {
     _ <- log.info(s"About to create : $user")

@@ -8,6 +8,7 @@ import net.martinprobson.example.common.model.User.USER_ID
 //noinspection ScalaUnusedSymbol
 trait UserRepository {
 
+  def deleteUser(id: USER_ID): IO[Int]
   def addUser(user: User): IO[User]
   def addUsers(users: List[User]): IO[List[User]]
   def getUser(id: USER_ID): IO[Option[User]]
