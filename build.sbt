@@ -76,7 +76,7 @@ lazy val server = project
   .in(file("server"))
   .dependsOn(common)
   .settings(commonSettings)
-  .settings(assembly / mainClass := Some("net.martinprobson.example.server.Server"))
+  .settings(assembly / mainClass := Some("net.martinprobson.example.server.UserServer"))
   .settings(libraryDependencies ++=
     commonDependencies ++
     Seq("org.http4s" %% "http4s-ember-server" % Http4sVersion,

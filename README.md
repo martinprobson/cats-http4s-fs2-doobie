@@ -75,7 +75,16 @@ Holds common code shared between projects above, such as configuration and the u
 
 ## Building/Running
 
-### Server Module
+### Server Module (docker-compose)
+The server (together with mysql db and nginx load balancer can be built and run via `docker-compose`: -
+
+```
+docker-compose up -d
+```
+
+This will run three instances of the server and round-robin load balancinig will be handled by nginx.
+
+### Server Module (direct)
 
 #### Build
 From sbt: -

@@ -1,0 +1,41 @@
+version: '2'
+services:
+    nginx:
+      image: nginx:latest
+      ports:
+        - "8085:8085"
+      volumes:
+        - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      depends_on:
+        - server
+      networks:
+        - server
+
+    db:
+      image: mysql:8
+      container_name: db
+      ports:
+        - "3306:3306"
+      environment:
+        MYSQL_ROOT_PASSWORD: root
+        MYSQL_DATABASE: users
+      networks:
+        - server
+      volumes:
+        - dbdata:/var/lib/mysql
+
+    server:
+      build: .
+      image: server:test
+      networks:
+        - server
+      depends_on:
+        - db
+      scale: 3
+      ports:
+        - "8085"
+
+volumes:
+    dbdata:
+networks:
+    server:

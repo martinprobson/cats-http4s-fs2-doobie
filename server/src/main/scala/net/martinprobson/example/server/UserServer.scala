@@ -12,11 +12,7 @@ import org.http4s.server.middleware.*
 import fs2.Stream
 import io.circe.generic.auto.*
 import io.circe.syntax.EncoderOps
-import net.martinprobson.example.server.db.repository.{
-  DBTransactor,
-  DoobieUserRepository,
-  UserRepository
-}
+import net.martinprobson.example.server.db.repository.{DBTransactor, DoobieUserRepository, UserRepository}
 import net.martinprobson.example.common.model.User
 import org.typelevel.log4cats.SelfAwareStructuredLogger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
@@ -53,11 +49,12 @@ object UserServer extends IOApp.Simple {
     _ <- log.info(s"Found: $u")
   } yield u
 
-  /**
-   * Delete a user with the given id.
-   * @param id The user id to delete
-   * @param userRepository The repository holding user objects
-   */
+  /** Delete a user with the given id.
+    * @param id
+    *   The user id to delete
+    * @param userRepository
+    *   The repository holding user objects
+    */
   def deleteUser(id: Long)(userRepository: UserRepository): IO[Int] = for {
     _ <- log.info(s"In deleteUser: $id")
     response <- userRepository.deleteUser(id)
@@ -87,7 +84,7 @@ object UserServer extends IOApp.Simple {
     *   The repository holding user objects.
     * @return
     *   A stream of user objects wrapped in an IO.
-   */
+    */
   def getUsersStream(userRepository: UserRepository): Stream[IO, User] =
     Stream.eval(log.info("getUsersStream")) >> userRepository.getUsersStream
 
@@ -151,7 +148,7 @@ object UserServer extends IOApp.Simple {
     * SQL statements. Config is lifted into a Resource so that it can be used to setup the connection pool.</p>
     */
   private def program(xa: Transactor[IO]): IO[Unit] = for {
-    _ <- log.info("Program starting ....")
+    _ <- log.info("Program starting .....")
     //userRepository <- InMemoryUserRepository.empty
     userRepository <- DoobieUserRepository(xa)
     rateLimit <- RateLimit.throttle(userService(userRepository).orNotFound)

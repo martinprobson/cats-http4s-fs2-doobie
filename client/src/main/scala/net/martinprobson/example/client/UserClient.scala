@@ -61,7 +61,7 @@ object UserClient extends IOApp.Simple {
 
   /** Main entry point for out client program, call our program with an in memory generated stream of Users
     */
-  override def run: IO[Unit] = program(MemorySource(1000).stream)
+  override def run: IO[Unit] = program(MemorySource(10000).stream)
 
   private def postUser(user: User, client: Client[IO]): IO[Either[(String, User), User]] = {
     def req(user: User): Request[IO] = Request[IO](method = Method.POST, uri"http://localhost:8085/user")
