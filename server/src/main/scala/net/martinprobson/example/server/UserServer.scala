@@ -1,6 +1,6 @@
 package net.martinprobson.example.server
 
-import cats.effect.{IO, IOApp}
+import cats.effect.{IO, IOApp, Resource}
 import doobie.Transactor
 import com.comcast.ip4s.*
 import org.http4s.circe.jsonEncoder
@@ -12,10 +12,14 @@ import org.http4s.server.middleware.*
 import fs2.Stream
 import io.circe.generic.auto.*
 import io.circe.syntax.EncoderOps
-import net.martinprobson.example.server.db.repository.{DBTransactor, DoobieUserRepository, UserRepository}
+import net.martinprobson.example.server.db.repository.{DBTransactor, DoobieUserRepository, InMemoryUserRepository, UserRepository}
 import net.martinprobson.example.common.model.User
+import org.http4s.metrics.prometheus.{Prometheus, PrometheusExportService}
+import org.http4s.server.Router
 import org.typelevel.log4cats.SelfAwareStructuredLogger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
+
+import java.net.InetAddress
 import scala.concurrent.duration.*
 
 object UserServer extends IOApp.Simple {
@@ -135,13 +139,22 @@ object UserServer extends IOApp.Simple {
         log.info("seconds") >> Ok(InfiniteStream.stream.take(10))
     }
 
+  def meteredRouter(userRepository: UserRepository): Resource[IO, HttpRoutes[IO]] = for {
+    metricsService <- PrometheusExportService.build[IO]
+    metrics <- Prometheus.metricsOps[IO](metricsService.collectorRegistry,"server")
+    router = Router[IO](
+      "/" -> Metrics[IO](metrics)(userService(userRepository)),
+      "/metrics" -> metricsService.routes
+    )
+  } yield router
+
   /** This is our main entry point where the code will actually get executed.
     *
     * We provide a transactor which will be used by Doobie to execute the SQL statements. Config is lifted into a
     * Resource so that it can be used to setup the connection pool.
     */
   override def run: IO[Unit] = DBTransactor.transactor.use { xa =>
-    program(xa).flatMap(_ => log.info("Program exit"))
+    program2(xa).flatMap(_ => log.info("Program exit"))
   }
 
   /** Start an Ember server to run our Http App.<p> We provide a transactor which will be used by Doobie to execute the
@@ -149,10 +162,11 @@ object UserServer extends IOApp.Simple {
     */
   private def program(xa: Transactor[IO]): IO[Unit] = for {
     _ <- log.info("Program starting .....")
-    //userRepository <- InMemoryUserRepository.empty
-    userRepository <- DoobieUserRepository(xa)
+    userRepository <- InMemoryUserRepository.empty
+    //userRepository <- DoobieUserRepository(xa)
     rateLimit <- RateLimit.throttle(userService(userRepository).orNotFound)
     corsServer <- IO(CORS.policy.withAllowOriginAll(userService(userRepository).orNotFound))
+    hostname <- IO(InetAddress.getLocalHost.getHostName)
     server <- EmberServerBuilder
       .default[IO]
       .withHost(ipv4"0.0.0.0")
@@ -165,12 +179,20 @@ object UserServer extends IOApp.Simple {
       .withLogger(log)
       .build
       .onFinalize(log.info("Shutdown of EmberServer"))
-      .use(_ => IO.never)
-//      .start
-//    _ <- IO.println("Server started on port 8085")
-//    _ <- IO.println("Press enter to stop the server...")
-//    _ <- IO.consoleForIO.readLine
-//    _ <- server.cancel
+      .use(_ => log.info(s"Starting....${InetAddress.getLocalHost.getHostName}") >> IO.never)
   } yield ()
 
+  private def program2(xa: Transactor[IO]) =
+    //FIXME Should be able to use Resource.eval for this????? in a for loop????? See how transactor is setup.
+    InMemoryUserRepository.empty.flatMap( userRepository => meteredRouter(userRepository).flatMap( route => {
+      EmberServerBuilder
+        .default[IO]
+        .withHost(ipv4"0.0.0.0")
+        .withPort(port"8090")
+        .withHttpApp(route.orNotFound)
+        .withShutdownTimeout(10.seconds)
+        .withLogger(log)
+        .build
+        .onFinalize(log.info("Shutdown of EmberServer"))
+    }).use(_ => IO.never))
 }

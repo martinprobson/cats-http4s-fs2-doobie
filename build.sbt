@@ -3,7 +3,7 @@ ThisBuild / scalaVersion := "3.3.1"
 ThisBuild / version := "0.0.2-SNAPSHOT"
 ThisBuild / organization := "net.martinprobson"
 
-val Http4sVersion = "0.23.16"
+val Http4sVersion = "0.23.26"
 val CirceVersion = "0.14.5"
 val fs2Version = "3.6.1"
 val LogbackVersion = "1.2.11"
@@ -80,6 +80,7 @@ lazy val server = project
   .settings(libraryDependencies ++=
     commonDependencies ++
     Seq("org.http4s" %% "http4s-ember-server" % Http4sVersion,
+        "org.http4s" %% "http4s-prometheus-metrics" % "0.23.12",
         "org.tpolecat" %% "doobie-core" % DoobieVersion,
         "org.tpolecat" %% "doobie-hikari" % DoobieVersion,
         "mysql" % "mysql-connector-java" % "8.0.30",
