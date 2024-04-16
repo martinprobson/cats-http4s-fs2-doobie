@@ -20,7 +20,7 @@ object StreamingUserClient extends IOApp.Simple {
   } yield res
 
   def stream(client: Client[IO]): Stream[IO,String] = {
-    val request = Request[IO](Method.GET, uri"http://localhost:8085/usersstream")
+    val request = Request[IO](Method.GET, uri"http://localhost:8085/api/usersstream")
     val s = userStream(client, request).chunks.flatMap(c => Stream.chunk(c))
     s.through(text.utf8.decode).evalTap(l => log.info(l))
   }

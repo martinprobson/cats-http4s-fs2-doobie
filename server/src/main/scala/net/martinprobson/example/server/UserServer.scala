@@ -1,5 +1,6 @@
 package net.martinprobson.example.server
 
+import cats.data.NonEmptyList
 import cats.effect.{IO, IOApp, Resource}
 import doobie.Transactor
 import com.comcast.ip4s.*
@@ -139,14 +140,20 @@ object UserServer extends IOApp.Simple {
         log.info("seconds") >> Ok(InfiniteStream.stream.take(10))
     }
 
-  def meteredRouter(userRepository: UserRepository): Resource[IO, HttpRoutes[IO]] = for {
+  def meteredRouter(userRepository: UserRepository, classifier: String): Resource[IO, HttpRoutes[IO]] = for {
     metricsService <- PrometheusExportService.build[IO]
-    metrics <- Prometheus.metricsOps[IO](metricsService.collectorRegistry,"server")
+    metrics <- Prometheus.metricsOps[IO](metricsService.collectorRegistry,
+      "servernew",
+      responseDurationSecondsHistogramBuckets = HistogramBuckets)
     router = Router[IO](
-      "/" -> Metrics[IO](metrics)(userService(userRepository)),
-      "/metrics" -> metricsService.routes
+      "/api" -> Metrics[IO](ops = metrics,
+        classifierF =  (_: Request[IO]) => Some(classifier))(userService(userRepository)),
+      "/" -> metricsService.routes
     )
   } yield router
+
+  private val HistogramBuckets: NonEmptyList[Double] =
+    NonEmptyList(.002, List(0.004,0.008,0.016,0.032,0.064,0.128,0.256,0.512,1.024))
 
   /** This is our main entry point where the code will actually get executed.
     *
@@ -154,45 +161,21 @@ object UserServer extends IOApp.Simple {
     * Resource so that it can be used to setup the connection pool.
     */
   override def run: IO[Unit] = DBTransactor.transactor.use { xa =>
-    program2(xa).flatMap(_ => log.info("Program exit"))
+    program(xa).flatMap(_ => log.info("Program exit"))
   }
 
-  /** Start an Ember server to run our Http App.<p> We provide a transactor which will be used by Doobie to execute the
-    * SQL statements. Config is lifted into a Resource so that it can be used to setup the connection pool.</p>
-    */
-  private def program(xa: Transactor[IO]): IO[Unit] = for {
-    _ <- log.info("Program starting .....")
-    userRepository <- InMemoryUserRepository.empty
-    //userRepository <- DoobieUserRepository(xa)
-    rateLimit <- RateLimit.throttle(userService(userRepository).orNotFound)
-    corsServer <- IO(CORS.policy.withAllowOriginAll(userService(userRepository).orNotFound))
-    hostname <- IO(InetAddress.getLocalHost.getHostName)
+  private def program(xa: Transactor[IO]) = (for {
+    hostname <- Resource.eval(IO(InetAddress.getLocalHost.getHostName))
+    userRepository <- Resource.eval(DoobieUserRepository(xa)).onFinalize(log.info("Finalize of DoobieUserRepository"))
+    routes <- meteredRouter(userRepository, hostname).onFinalize(log.info("Finalize of meteredRouter"))
     server <- EmberServerBuilder
-      .default[IO]
-      .withHost(ipv4"0.0.0.0")
-      .withPort(port"8085")
-      // uncomment line below to remove rate limiter.
-      //.withHttpApp(rateLimit)
-      //.withHttpApp(userService(userRepository).orNotFound)
-      .withHttpApp(corsServer)
-      .withShutdownTimeout(10.seconds)
-      .withLogger(log)
-      .build
-      .onFinalize(log.info("Shutdown of EmberServer"))
-      .use(_ => log.info(s"Starting....${InetAddress.getLocalHost.getHostName}") >> IO.never)
-  } yield ()
-
-  private def program2(xa: Transactor[IO]) =
-    //FIXME Should be able to use Resource.eval for this????? in a for loop????? See how transactor is setup.
-    InMemoryUserRepository.empty.flatMap( userRepository => meteredRouter(userRepository).flatMap( route => {
-      EmberServerBuilder
         .default[IO]
         .withHost(ipv4"0.0.0.0")
-        .withPort(port"8090")
-        .withHttpApp(route.orNotFound)
+        .withPort(port"8085")
+        .withHttpApp(routes.orNotFound)
         .withShutdownTimeout(10.seconds)
         .withLogger(log)
         .build
         .onFinalize(log.info("Shutdown of EmberServer"))
-    }).use(_ => IO.never))
+  } yield server).use(_ => log.info(s"Starting: ${InetAddress.getLocalHost.getHostName}") >> IO.never)
 }
