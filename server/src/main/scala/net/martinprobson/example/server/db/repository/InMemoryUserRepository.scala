@@ -10,13 +10,17 @@ import org.typelevel.log4cats.slf4j.Slf4jLogger
 import scala.collection.immutable.SortedMap
 
 class InMemoryUserRepository(db: Ref[IO, SortedMap[USER_ID, User]], counter: Ref[IO, Long]) extends UserRepository {
-  
+
   override def deleteUser(id: USER_ID): IO[Int] = for {
     logger <- Slf4jLogger.create[IO]
     _ <- logger.debug(s"About to delete user: $id")
     id <- counter.modify(x => (x - 1, x - 1))
-    _ <- db.update(users => users.filterNot( (key, user) => key == id))
-  } yield 0
+    result <- db.modify(users => {
+      val res = if (users.contains(id)) 1 else 0
+      (users.filterNot( (key, _) => key == id),res)
+    }
+    )
+  } yield result
 
   override def addUser(user: User): IO[User] = for {
     logger <- Slf4jLogger.create[IO]
