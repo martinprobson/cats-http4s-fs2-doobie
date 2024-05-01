@@ -42,7 +42,7 @@ class JdbcUserRepository(ds: DataSource) extends UserRepository {
     createConnection(dataSource)
       .flatMap(createStatement)
       .flatMap(stmt => executeQuery(s"SELECT id, name, email FROM user " +
-        "ORDER BY id LIMIT $pageSize OFFSET ${pageNo * pageSize};", stmt))
+        s"ORDER BY id LIMIT $pageSize OFFSET ${pageNo * pageSize};", stmt))
       .use { rs =>
         IO.blocking {
           val users = scala.collection.mutable.ListBuffer[User]()
@@ -58,7 +58,7 @@ class JdbcUserRepository(ds: DataSource) extends UserRepository {
     createConnection(dataSource)
       .flatMap(createStatement)
       .use { stmt =>
-        executeUpdate(s"INSERT INTO user (name, email) VALUES ('${user.name}','${user.email}');", stmt)
+        executeUpdate(s"INSERT INTO user (name, email) VALUES ('${user.name}','${user.email}');", stmt) *>
           executeQuery("SELECT last_insert_id();", stmt).use { rs =>
             IO.blocking {
               if (rs.next()) {
@@ -152,7 +152,7 @@ class JdbcUserRepository(ds: DataSource) extends UserRepository {
 
   private def executeUpdate(update: String, statement: Statement): IO[Int] = for {
     _ <- log.debug(s"executeUpdate: $update")
-    result <- IO.blocking(statement.executeUpdate(update)).debug()
+    result <- IO.blocking(statement.executeUpdate(update)).debug().attempt.rethrow
   } yield result
 
 }
