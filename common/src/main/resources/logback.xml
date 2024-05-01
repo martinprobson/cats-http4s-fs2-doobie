@@ -4,7 +4,8 @@
             <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %highlight(%-5level) [%10thread] %logger{15} - %message%n%xException{10}</pattern>
         </encoder>
     </appender>
-    <root level="info">
+    <logger name="net.martinprobson" level="DEBUG" />
+    <root level="INFO">
         <appender-ref ref="STDOUT" />
     </root>
 </configuration>

@@ -12,11 +12,13 @@ import org.http4s.server.middleware.*
 import fs2.Stream
 import io.circe.generic.auto.*
 import io.circe.syntax.EncoderOps
-import net.martinprobson.example.server.db.repository.{DBTransactor, DoobieUserRepository, InMemoryUserRepository, UserRepository}
+import net.martinprobson.example.common.config.Config.config
+import net.martinprobson.example.server.db.repository.{DBTransactor, DoobieUserRepository, InMemoryUserRepository, JdbcUserRepository, UserRepository}
 import net.martinprobson.example.common.model.User
 import org.typelevel.log4cats.SelfAwareStructuredLogger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 
+import javax.sql.DataSource
 import scala.concurrent.duration.*
 
 object UserServer extends IOApp.Simple {
@@ -141,17 +143,24 @@ object UserServer extends IOApp.Simple {
     * We provide a transactor which will be used by Doobie to execute the SQL statements. Config is lifted into a
     * Resource so that it can be used to setup the connection pool.
     */
-  override def run: IO[Unit] = DBTransactor.transactor.use { xa =>
-    program(xa).flatMap(_ => log.info("Program exit"))
+  //override def run: IO[Unit] = DBTransactor.transactor.use { xa =>
+  //  program(xa).flatMap(_ => log.info("Program exit"))
+  //}
+  override def run: IO[Unit] = (for {
+    xa <- DBTransactor.transactor
+    ds <- JdbcUserRepository.dataSource(IO(config))
+  } yield (xa, ds)).use{ (xa, ds) =>
+    program(xa, ds).flatMap(_ => log.info("Program exit"))
   }
 
   /** Start an Ember server to run our Http App.<p> We provide a transactor which will be used by Doobie to execute the
     * SQL statements. Config is lifted into a Resource so that it can be used to setup the connection pool.</p>
     */
-  private def program(xa: Transactor[IO]): IO[Unit] = for {
+  private def program(xa: Transactor[IO], ds: DataSource): IO[Unit] = for {
     _ <- log.info("Program starting .....")
-    userRepository <- InMemoryUserRepository.empty
+    //userRepository <- InMemoryUserRepository.empty
     //userRepository <- DoobieUserRepository(xa)
+    userRepository <- JdbcUserRepository(ds)
     rateLimit <- RateLimit.throttle(userService(userRepository).orNotFound)
     corsServer <- IO(CORS.policy.withAllowOriginAll(userService(userRepository).orNotFound))
     server <- EmberServerBuilder

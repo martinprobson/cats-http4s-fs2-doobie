@@ -3,10 +3,10 @@ ThisBuild / scalaVersion := "3.3.1"
 ThisBuild / version := "0.0.2-SNAPSHOT"
 ThisBuild / organization := "net.martinprobson"
 
-val Http4sVersion = "0.23.16"
-val CirceVersion = "0.14.5"
-val fs2Version = "3.6.1"
-val LogbackVersion = "1.2.11"
+val Http4sVersion = "0.23.26"
+val CirceVersion = "0.14.7"
+val fs2Version = "3.10.2"
+val LogbackVersion = "1.4.14"
 val DoobieVersion = "1.0.0-RC1"
 
 val commonDependencies = Seq(
