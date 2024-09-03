@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-server
+  labels:
+    app: user-server
+spec:
+  ports:
+    - port: 8085
+  selector:
+    app: user-server
+    tier: server
+  type: LoadBalancer

@@ -31,7 +31,7 @@ services:
         - server
       depends_on:
         - db
-      scale: 3
+      scale: 1
       ports:
         - "8085"
 

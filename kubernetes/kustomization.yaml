@@ -1,0 +1,15 @@
+secretGenerator:
+- name: mysql-pass
+  literals:
+  - password=root
+resources:
+   - namespace.yaml
+   - mysql-deployment.yaml
+   - server-deployment.yaml
+   - user-server-service.yaml
+namespace: user-server-namespace
+commonLabels:
+  app: user-server
+  env: development
+
+

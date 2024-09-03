@@ -12,7 +12,12 @@ import org.http4s.server.middleware.*
 import fs2.Stream
 import io.circe.generic.auto.*
 import io.circe.syntax.EncoderOps
-import net.martinprobson.example.server.db.repository.{DBTransactor, DoobieUserRepository, InMemoryUserRepository, UserRepository}
+import net.martinprobson.example.server.db.repository.{
+  DBTransactor,
+  DoobieUserRepository,
+  InMemoryUserRepository,
+  UserRepository
+}
 import net.martinprobson.example.common.model.User
 import org.typelevel.log4cats.SelfAwareStructuredLogger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
@@ -150,8 +155,8 @@ object UserServer extends IOApp.Simple {
     */
   private def program(xa: Transactor[IO]): IO[Unit] = for {
     _ <- log.info("Program starting .....")
-    userRepository <- InMemoryUserRepository.empty
-    //userRepository <- DoobieUserRepository(xa)
+    //userRepository <- InMemoryUserRepository.empty
+    userRepository <- DoobieUserRepository(xa)
     rateLimit <- RateLimit.throttle(userService(userRepository).orNotFound)
     corsServer <- IO(CORS.policy.withAllowOriginAll(userService(userRepository).orNotFound))
     server <- EmberServerBuilder

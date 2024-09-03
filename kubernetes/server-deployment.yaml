@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-server
+  labels:
+    app: user-server
+    tier: server
+spec:
+  selector:
+    matchLabels:
+      app: user-server
+      tier: server
+  template:
+    metadata:
+      labels:
+        app: user-server
+        tier: server
+    spec:
+      containers:
+        -  image: localhost:32000/server:latest
+           name: user-server
+           env:
+           - name: url
+             value: "jdbc:mysql://mysql:3306/users"
+           ports:
+           - containerPort: 8085
