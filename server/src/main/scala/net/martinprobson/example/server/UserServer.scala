@@ -33,9 +33,9 @@ object UserServer extends IOApp.Simple {
     */
   def postUser(request: Request[IO])(userRepository: UserRepository): IO[User] = for {
     user <- request.as[User]
-    _ <- log.debug(s"Got User: $user")
+    _ <- log.info(s"Got User: $user")
     dbUser <- userRepository.addUser(user)
-    _ <- log.debug(s"Added User: $dbUser to Db")
+    _ <- log.info(s"Added User: $dbUser to Db")
   } yield dbUser
 
   /** Get an individual users by id or Option.None if the user does not exist

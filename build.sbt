@@ -1,12 +1,12 @@
 name := "CATS Effect http4s/fs2 with Doobie example"
-ThisBuild / scalaVersion := "3.3.1"
-ThisBuild / version := "0.0.2-SNAPSHOT"
+ThisBuild / scalaVersion := "3.3.6"
+ThisBuild / version := "0.0.1-SNAPSHOT"
 ThisBuild / organization := "net.martinprobson"
 
-val Http4sVersion = "0.23.16"
-val CirceVersion = "0.14.5"
-val fs2Version = "3.6.1"
-val LogbackVersion = "1.2.11"
+val Http4sVersion = "0.23.28"
+val CirceVersion = "0.14.10"
+val fs2Version = "3.11.0"
+val LogbackVersion = "1.5.13"
 val DoobieVersion = "1.0.0-RC1"
 
 val commonDependencies = Seq(
@@ -17,8 +17,8 @@ val commonDependencies = Seq(
   "io.circe" %% "circe-generic" % CirceVersion,
   "io.circe" %% "circe-literal" % CirceVersion,
   "co.fs2" %% "fs2-core" % fs2Version,
-  "com.github.japgolly.clearconfig" %% "core" % "3.0.0",
-  "com.disneystreaming" %% "weaver-cats" % "0.8.2" % Test
+  "com.github.japgolly.clearconfig" %% "core" % "3.1.0",
+  "com.disneystreaming" %% "weaver-cats" % "0.8.4" % Test
 )
 
 lazy val root = project
